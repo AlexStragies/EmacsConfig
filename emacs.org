@@ -1,0 +1,673 @@
+﻿#+Title: The Emacs Config in Org-Mode
+ # <html><body><!--
+#+Author:
+#+LINK: wikipedia    https://en.wikipedia.org/wiki/
+#+LINK: firewall     http://langw/
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="css/org-view.css" />
+#+PROPERTY: header-args:emacs-lisp :noweb yes
+#+PROPERTY: header-args:awk :tangle no :results code
+#+PROPERTY: header-args:awk+ :wrap SRC emacs-lisp
+#+options: toc:t
+
+* Using this settings file and emacs
+** Some useful default Keys                                            :Keys:
+#+NAME: Useful_Keys
+| KeyCombo      | KeyMap | Meaning                                        |
+|---------------+--------+------------------------------------------------|
+| =C-u C-c C-q= |        | Realign all tags                               |
+| M-Enter       |        | create new heading at same indent level        |
+| M-ArrowKey    |        | promote/demote/raise/lower current heading     |
+| C-ucq         |        | align tags to the right margin                 |
+| C-cl          |        | Create/Edit org mode link                      |
+| C-ce h        |        | Open export to HTML options                    |
+| C-c C-x       | org    | Toggle display of entities as UTF-8 characters |
+| C-c /         | org    | org-sparse-display                             |
+| C-c / m       | org    | org-sparse-display match by Tag                |
+| M-S-↑→↓←      | org    | in TableEditor: Remove/add Columns/Lines       |
+|               |        |                                                |
+*** TODO Add some more keyboard shortcuts in the usage hint section
+** Tool functions                                                     :Tools:
+Nomenclature proposal:
+- xxx-xxx-xxx :: callable functions
+- Xxx-Xxx-XXX :: Tables
+*** Lisp List Helpers
+
+#+BEGIN_SRC emacs-lisp
+(defun first(myList)
+  "gets the first element of a list"
+  (car myList))
+
+(defun second(myList)
+  "Get the second element of myList"
+  (car (cdr myList)))
+#+END_SRC
+
+*** Color Picker                                                     :Colors:
+
+#+NAME: My-Insert-Color-Hex
+#+BEGIN_SRC emacs-lisp
+(defun my-insert-color-hex ()
+  "Select a color and insert its hexadecimal format."
+  (interactive "*")
+  (let ((buf (current-buffer)))
+    (list-colors-display
+     nil nil `(lambda (name)
+                (interactive)
+                (quit-window)
+                (with-current-buffer ,buf
+                  (insert (apply 'color-rgb-to-hex
+                                 (color-name-to-rgb name))))))))
+
+
+#+END_SRC
+
+*** delete-file-visited-by-buffer and delete-file-and-buffer
+#+BEGIN_SRC emacs-lisp
+(defun delete-file-and-buffer ()
+  "Kill the current buffer and deletes the file it is visiting."
+  (interactive)
+  (let ((filename (buffer-file-name)))
+    (if filename
+        (if (y-or-n-p (concat "Do you really want to delete file " filename " ?"))
+            (progn
+              (delete-file filename)
+              (message "Deleted file %s." filename)
+              (kill-buffer)))
+(message "Not a file visiting buffer!"))))
+
+(defun delete-file-visited-by-buffer (buffername)
+  "Delete the file visited by the buffer named BUFFERNAME."
+  (interactive "b")
+  (let* ((buffer (get-buffer buffername))
+         (filename (buffer-file-name buffer)))
+    (when filename
+      (delete-file filename)
+      (kill-buffer-ask buffer))))
+#+END_SRC
+
+**** TODO Where do I use this function?
+
+*** Add Header to tables
+#+NAME: add-header-line
+#+BEGIN_SRC emacs-lisp :var tbl="" :tangle no
+(cons (car tbl) (cons 'hline (cdr tbl)))
+#+END_SRC
+* Package Configurations                                              :Setup:
+
+#+NAME: Table-My-Packages
+| Package Name          | Package Usage                     | Initialization     | Comment |
+|-----------------------+-----------------------------------+--------------------+---------|
+| org-evil              |                                   |                    |         |
+| rainbow-mode          | colorizes in-buffer color codes   | (rainbow-mode)     |         |
+| yasnippet-snippets    |                                   |                    |         |
+| yasnippet             | typing speed-up with templates    | (yas-global-mode)  |         |
+| emmet-mode            | [[https://github.com/smihica/emmet-mode][type HTML quickly with CSS syntax]] | sdfgdf             |         |
+| vimish-fold           | Fold text like in vim (1 level?)  | (vimish-fold-mode) |         |
+| ztree                 | Not used yet                      |                    | n/a     |
+| evil                  | VI emulation                      |                    |         |
+| evil-leader           | VI leader key plugin              |                    |         |
+| evil-matchit          | Plugin for E.VI.L                 |                    |         |
+| evil-surround         | Plugin for E.VI.L                 |                    |         |
+| highlight-indentation |                                   |                    |         |
+| helm                  | Helm                              |                    |         |
+| buffer-move           |                                   |                    |         |
+| auto-complete         |                                   |                    |         |
+| linum-relative        |                                   |                    |         |
+| expand-region         |                                   |                    |         |
+| key-chord             |                                   |                    |         |
+|      magit            |                                   |                    |         |
+
+** Code block to verify installation of the specified packages, and install them if they are not.
+
+#+NAME: Install-My-Packages
+#+BEGIN_SRC emacs-lisp :noweb yes :colnames t :var pNames=Table-My-Packages[,0]
+(dolist (package pNames)
+  (unless (package-installed-p (intern package ))
+    (message "Package %s is not installed, fetching" package)
+    (package-install (intern package))
+))
+#+END_SRC
+
+** Package initialization code
+
+From the above table, the =AWK= code block below receives the third column and
+
+#+NAME: AWK-Extract-Init-Strings
+#+BEGIN_SRC awk :stdin Table-My-Packages[,2]
+/^\(.*\)$/
+#+END_SRC
+
+extracts the initialization strings lines delimited by parenthesis into the below =emacs-lisp= block:
+
+#+RESULTS: AWK-Extract-Init-Strings
+#+BEGIN_SRC emacs-lisp
+(rainbow-mode)
+(yas-global-mode)
+(vimish-fold-mode)
+#+END_SRC
+
+** Yasnippet                                                      :yasnippet:
+*** List of installed yasnippets
+#+NAME: List-installed-yasnippets
+#+HEADER: :tangle no :dir (concat (getenv "HOME") "/.emacs.d/")
+#+HEADER: :colnames yes :post add-header-line(*this*)
+#+BEGIN_SRC sh
+echo Mode,Snippet
+find snippets/ -type f | sed -e 's|snippets/||;s|/|,|' | sort
+#+END_SRC
+
+#+RESULTS: List-installed-yasnippets
+| Mode              | Snippet                           |
+|-------------------+-----------------------------------|
+| graphviz-dot-mode | edge-with-attributes-bracket      |
+| graphviz-dot-mode | image-attribute                   |
+| graphviz-dot-mode | invisible-point                   |
+| graphviz-dot-mode | node-with-attributes              |
+| graphviz-dot-mode | node-with-shape-and-label         |
+| graphviz-dot-mode | shape-attribute                   |
+| graphviz-dot-mode | style-invisible                   |
+| graphviz-dot-mode | tooltip-attribute                 |
+| graphviz-dot-mode | url-attribute                     |
+| graphviz-dot-mode | url-attribute-with-injected-class |
+| graphviz-dot-mode | url-attribute-with-target         |
+| org-mode          | Dot-Graph-Template                |
+| org-mode          | header-item                       |
+| org-mode          | Insert-Org-Header-Args            |
+| org-mode          | Named-Source-Code-Block           |
+| org-mode          | table2                            |
+| org-mode          | table3                            |
+
+
+*** YASnippet options
+#+NAME: YASnippet-options
+#+BEGIN_SRC emacs-lisp
+(setq yas-triggers-in-field t)
+#+END_SRC
+
+* OLD CONFIG
+#+BEGIN_SRC emacs-lisp
+;┌┐ Evil Mode: ┌────────────────────────────────────────────────────────────────
+;└┴────────────┘
+
+(require 'evil)
+(require 'evil-leader)
+(global-evil-leader-mode)
+(evil-mode 1)
+(global-evil-surround-mode)
+(global-evil-matchit-mode)
+
+;┌┐ Helm Mode: ┌────────────────────────────────────────────────────────────────
+;└┴────────────┘
+(require 'helm)
+
+;┌┐ Visual customization: ┌─────────────────────────────────────────────────────
+;└┴───────────────────────┘
+
+(require 'highlight-indentation)
+(highlight-indentation-mode 1)
+
+(require 'whitespace)
+(setq whitespace-style '(face empty tabs trailing))
+;(setq whitespace-style '(face empty tabs lines-tail trailing))
+(global-whitespace-mode t)
+
+;;(require 'column-marker)
+;;(column-marker-1 79)
+;;(column-marker-2 89)
+;;(column-marker-3 109)
+;(column-marker-create column-marker-4 column-marker-1-face)
+;(column-marker-create column-marker-5 column-marker-1-face)
+;(column-marker-4 2)
+;(column-marker-5 4)
+;(column-marker-create column-marker-6 column-marker-1-face)
+
+;;  (require 'fill-column-indicator)
+;;    (setq-default fci-rule-column 80)
+;;    (setq fci-always-use-textual-rule t)
+;;    (fci-mode)
+;;  (if buffer-file-name (fci-mode 1))
+
+;┌┐ Behavior customization: ┌───────────────────────────────────────────────────
+;└┴─────────────────────────┘
+
+(require 'buffer-move) ;; Keybindings defined below
+(electric-pair-mode)
+
+
+;┌┐ Key Bindings: ┌─────────────────────────────────────────────────────────────
+;└┴───────────────┘
+
+; Leader Key configuration
+(evil-leader/set-leader "ä")
+(evil-leader/set-key
+  "e" 'find-file
+  "b" 'switch-to-buffer
+  "C" 'hl-line-mode
+  "c" 'my-insert-color-hex
+  "l" 'linum-mode
+  "f" 'fci-mode
+  "s" 'cycle-ispell-languages
+  "R" 'rainbow-delimiters-mode
+  "F" 'set-abbrev-lang-to-French
+  "Z" 'vimish-fold-delete
+  "E" 'set-abbrev-lang-to-English
+  "m" 'menu-bar-mode
+  "P" 'prettify-symbols-mode
+  "\\" 'zin/org-tag-match-context
+  "r" 'er/expand-region
+  "L" 'linum-relative-mode
+  "k" 'kill-buffer )
+
+(define-key evil-motion-state-map "ö" 'evil-ex)
+(define-key evil-normal-state-map (kbd "SPC") 'vimish-fold-toggle)
+(define-key evil-normal-state-map (kbd "TAB") 'hs-toggle-hiding)
+(define-key evil-visual-state-map (kbd "SPC") 'vimish-fold)
+;;
+(global-set-key (kbd "<menu>") 'helm-M-x)
+(global-set-key (kbd "C-:") 'flyspell-auto-correct-previous-word)
+(global-set-key (kbd "¢") 'flyspell-auto-correct-previous-word)
+;;(define-key evil-insert-state-map (kbd "<tab>") 'dabbrev-completion)
+
+; CTRL+<ARROWS> move between Buffers, and wrap around.
+(windmove-default-keybindings 'hyper)
+(setq windmove-wrap-around t)
+
+(require 'key-chord)
+(key-chord-mode 1)
+(key-chord-define evil-insert-state-map  "jk" 'evil-normal-state)
+
+;;(add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
+
+;;(add-to-list 'load-path "~/.emacs.d")
+(require 'auto-complete-config)
+(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
+;(auto-complete-config)
+(ac-config-default)
+;(global-auto-complete-mode t’)
+
+(setq backup-by-copying t      ; don't clobber symlinks
+   backup-directory-alist
+   '(("." . "~/.saves"))    ; don't litter my fs tree
+   delete-old-versions t
+   kept-new-versions 6
+   kept-old-versions 2
+   version-control t)       ; use versioned backups
+
+(setq auto-save-file-name-transforms
+      `((".*" ,temporary-file-directory t)))
+
+
+(require 'tramp)
+
+;;(set-variable indent-tabs-mode nil)
+(setq indent-tabs-mode nil)
+(setq js-indent-level 2)
+#+END_SRC
+
+
+* Visual Customization                                               :Visual:
+** Config Section Header
+#+NAME: Section-Header-Visual
+#+BEGIN_SRC emacs-lisp
+;┌┐ Visual customizations: ┌────────────────────────────────────────────────────
+;└┴────────────────────────┘
+#+END_SRC
+
+** Removing the Menu-Bar by default                                 :MenuBar:
+#+BEGIN_SRC emacs-lisp
+(menu-bar-mode -1)
+#+END_SRC
+
+** Show pretty symbols for things like lambda, etc                  :Symbols:
+
+#+NAME: Symbol-Table
+| Ugly               | Mode       | Pretty | Reason                      |
+|--------------------+------------+--------+-----------------------------|
+| forEach            | js         | ∀      | std Math Symbol             |
+| for                | js         | ↻      | Looping construct           |
+| in                 | js         | ∊      | "element of"                |
+| function           | js         | λ      | std gr. lambda              |
+| <=                 | js         | ≤      |                             |
+| >=                 | js         | ≥      |                             |
+| =>                 | js         | ⤇      |                             |
+| ^=                 | js         | ≙      |                             |
+| ==                 | js         | ≡      |                             |
+| ===                | js         | ≣      |                             |
+| var                | js         | 𝕍      |                             |
+| getElementById     | js         | ⚲      | ⋕                           |
+| querySelector      | js         | 𝑸      |                             |
+| querySelectorAll   | js         | ℚ      |                             |
+| insertAdjacentHTML | js         | @      |                             |
+| document           | js         | 𝔻      |                             |
+| info               | js         | ⓘ      |                             |
+| async              | js         | ⑂      | "fork"                      |
+| beforebegin        | js         | ⬑      | "back and up the tag stack" |
+| null               | js         | ⦰      | "Empty Set"                 |
+| createElement      | js         | ©      |                             |
+| console            | js         | ℂ      |                             |
+| insertBefore       | js         | ⥶      | "Place before tag"          |
+| appendChild        | js         | ⥸      | "Place after tag"           |
+| while              | js         | ⌛      |                             |
+| true               | js         | ①      | True, binary one            |
+| false              | js         | ⓪      | False, binary zero          |
+| if                 | js         | ⁇      |                             |
+| alert              | js         | ⓐ      |                             |
+| from               | js         | ↤      |                             |
+| +=                 | js         | ⥆      |                             |
+| return             | js         | ↲      |                             |
+| replace            | js         | ↕      |                             |
+| body               | js         | 𝔹      |                             |
+| innerHTML          | js         | 𝕀      |                             |
+| dolist             | emacs-lisp | ∀      | see js/forEach              |
+| eq                 | emacs-lisp | ≟      |                             |
+| setq               | emacs-lisp | ≔      |                             |
+| nil                | emacs-lisp | ∅      |                             |
+| if                 | emacs-lisp | ⁇      |                             |
+| unless             | emacs-lisp | ⁈      |                             |
+| not                | emacs-lisp | ¬      |                             |
+| defun              | emacs-lisp | 𝔽      |                             |
+| define-key         | emacs-lisp | 𝔻      |                             |
+| message            | emacs-lisp | 𝕄      |                             |
+| require            | emacs-lisp | ℝ      |                             |
+| kbd                | emacs-lisp | 𝕂      |                             |
+| and                | emacs-lisp | ∧      |                             |
+| add-hook           | emacs-lisp | ℍ      |                             |
+| defun              | Unused     | 𝕗      |                             |
+| defun              | Unused     | Ⓕ      |                             |
+| add-hook           | Unused     | Ⓗ      |                             |
+| define-key         | Unused     | Ⓓ      |                             |
+| for                | python     | ↻      |                             |
+| in                 | python     | ∊      |                             |
+
+#+BEGIN_SRC emacs-lisp
+(global-prettify-symbols-mode)
+
+;; Block for resetting the hooks while testing:
+;;(setq emacs-lisp-mode-hook nil)
+;;(setq js-mode-hook nil)
+;;(setq python-mode-hook nil)
+#+END_SRC
+
+#+RESULTS: AWK-Process-Table
+#+BEGIN_SRC emacs-lisp
+(add-hook 'js-mode-hook
+  (lambda () (mapc (lambda (pair) (push pair prettify-symbols-alist))
+    '(
+      ("replace"             . ?↕)
+      ("+="                  . ?⥆)
+      ("from"                . ?↤)
+      ("function"            . ?λ)
+      ("querySelectorAll"    . ?ℚ)
+      ("insertBefore"        . ?⥶)
+      ("async"               . ?⑂)
+      ("insertAdjacentHTML"  . ?@)
+      ("body"                . ?𝔹)
+      ("<="                  . ?≤)
+      ("innerHTML"           . ?𝕀)
+      ("document"            . ?𝔻)
+      ("getElementById"      . ?⚲)
+      ("=="                  . ?≡)
+      ("querySelector"       . ?𝑸)
+      ("=>"                  . ?⤇)
+      (">="                  . ?≥)
+      ("appendChild"         . ?⥸)
+      ("in"                  . ?∊)
+      ("for"                 . ?↻)
+      ("forEach"             . ?∀)
+      ("console"             . ?ℂ)
+      ("var"                 . ?𝕍)
+      ("return"              . ?↲)
+      ("false"               . ?⓪)
+      ("null"                . ?⦰)
+      ("info"                . ?ⓘ)
+      ("alert"               . ?ⓐ)
+      ("while"               . ?⌛)
+      ("beforebegin"         . ?⬑)
+      ("==="                 . ?≣)
+      ("if"                  . ?⁇)
+      ("true"                . ?①)
+      ("^="                  . ?≙)
+     ))))
+
+(add-hook 'emacs-lisp-mode-hook
+  (lambda () (mapc (lambda (pair) (push pair prettify-symbols-alist))
+    '(
+      ("unless"              . ?⁈)
+      ("dolist"              . ?∀)
+      ("defun"               . ?𝔽)
+      ("kbd"                 . ?𝕂)
+      ("and"                 . ?∧)
+      ("eq"                  . ?≟)
+      ("add-hook"            . ?ℍ)
+      ("setq"                . ?≔)
+      ("require"             . ?ℝ)
+      ("define-key"          . ?𝔻)
+      ("nil"                 . ?∅)
+      ("not"                 . ?¬)
+      ("message"             . ?𝕄)
+      ("if"                  . ?⁇)
+     ))))
+
+(add-hook 'python-mode-hook
+  (lambda () (mapc (lambda (pair) (push pair prettify-symbols-alist))
+    '(
+      ("in"                  . ?∊)
+      ("for"                 . ?↻)
+     ))))
+
+#+END_SRC
+
+#+NAME: AWK-Process-Table
+#+BEGIN_SRC awk :stdin Symbol-Table
+NR<2 {next;}
+{res[$2][$1]=$3}
+ml<length($1){ml=length($1)}
+END {
+  for (mode in res) {
+    if (mode=="Unused") continue;
+    print "(add-hook '"mode"-mode-hook"
+    print "  (lambda () (mapc (lambda (pair) (push pair prettify-symbols-alist))"
+    print "    '("
+    for (item in res[mode]) {
+      padding = gensub(/ /, " ", "g", sprintf("%*s", ml+1-length(item), ""))
+      printf "      (\"%s\"%s . ?%s)\n" , item , padding, res[mode][item]
+    }
+    print "     ))))\n"
+  }
+}
+#+END_SRC
+
+#+NAME: Make-Pretty-Pairs
+#+HEADER: :var prettifyable=Symbol-Table
+#+HEADER: :var targetMode="DoesNotExist" :results list
+#+BEGIN_SRC emacs-lisp :noweb yes :tangle no
+(let ((res nil))
+  (dolist (row prettifyable)
+    (when (string= (nth 1 row ) targetMode)
+      (push (cons (car row) (string-to-char (nth 2 row))) res)
+    )
+  )
+  res
+)
+#+END_SRC
+
+*** TODO make it unprettify at point (doesnt work yet)
+#+BEGIN_SRC emacs-lisp
+(setq prettify-symbols-unprettify-at-point t)
+#+END_SRC
+
+** Other unsorted Visual Customizations                            :Unsorted:
+
+#+BEGIN_SRC emacs-lisp :comments org
+
+;; Show relative line numbers
+(global-linum-mode 1)
+(linum-relative-mode 1)
+
+(column-number-mode t) ; This should enable column numbers in the mode line
+
+; Start with toolbar disabled
+(tool-bar-mode -1)
+
+(show-paren-mode t) ;; enable show paren mode
+
+(setq show-paren-style 'expression) ;; highlight whole expression
+;;(setq show-paren-style 'parenthesis) ;; highlight whole expression
+(set-face-background 'show-paren-match-face "#dddddd")
+
+(require 'whitespace)
+(setq whitespace-style '(face empty tabs trailing))
+;(setq whitespace-style '(face empty tabs lines-tail trailing))
+(global-whitespace-mode t)
+
+#+END_SRC
+
+* Multilingual Abbreviations & Spelling                           :Languages:
+** Tool functions for language switching etc
+#+BEGIN_SRC emacs-lisp
+;┌┐ Spelling Correction & Dictionaries: ┌───────────────────────────────────────
+;└┴─────────────────────────────────────┘
+
+; Setup spelling correction for 4 languages
+(let ((langs '("american" "francais" "deutsch8" "castellano8")))
+  (setq lang-ring (make-ring (length langs)))
+  (dolist (elem langs) (ring-insert lang-ring elem)))
+
+;; A bunch of functions to change the abbrev tables
+(defun set-abbrev-lang-to-English () "" (interactive)
+       (setq local-abbrev-table lang-american-mode-abbrev-table))
+
+(defun set-abbrev-lang-to-French () "" (interactive)
+       (setq local-abbrev-table lang-francais-mode-abbrev-table))
+
+(defun set-abbrev-lang-to-Spanish () "" (interactive)
+       (setq local-abbrev-table lang-castellano8-mode-abbrev-table))
+
+(defun set-abbrev-lang-to-German () "" (interactive)
+       (setq local-abbrev-table lang-deutsch8-mode-abbrev-table))
+
+(defun cycle-ispell-languages ()
+  (interactive)
+  (let ((lang (ring-ref lang-ring -1)))
+    (ring-insert lang-ring lang)
+    (ispell-change-dictionary lang)))
+
+(defun dont-insert-expansion-char ()  t)    ;; this is the "hook" function
+  (put 'dont-insert-expansion-char 'no-self-insert t)   ;; the hook should have a "no-self-insert"-property set 
+#+END_SRC
+
+** Abbreviation file(s)                                               :Files:
+#+BEGIN_SRC emacs-lisp
+(setq abbrev-file-name             ;; tell emacs where to read abbrev
+   "~/.emacs.d/abbrev_defs")    ;; definitions from...
+(setq save-abbrevs t)
+#+END_SRC
+
+** Enabling Abbrevs                                                   :Setup:
+#+BEGIN_SRC emacs-lisp
+(setq-default abbrev-mode t)
+#+END_SRC
+
+** Language Keys                                                       :Keys:
+
+Here we set some keys for comfortably switching between languages
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key [f6] 'cycle-ispell-languages)
+(global-set-key [f7] 'flyspell-mode)
+
+(global-set-key (kbd "H-e") 'set-abbrev-lang-to-English)
+(global-set-key (kbd "H-f") 'set-abbrev-lang-to-French)
+(global-set-key (kbd "H-s") 'set-abbrev-lang-to-Spanish)
+(global-set-key (kbd "H-g") 'set-abbrev-lang-to-German)
+#+END_SRC
+
+** TODO Building abbrev lists from language dictionaries
+
+#+BEGIN_SRC emacs-lisp :tangle no
+;; none yet
+#+END_SRC
+
+* Org mode customizations                                               :Org:
+** Some tool functions for org                                        :Tools:
+#+BEGIN_SRC emacs-lisp
+(defun zin/org-tag-match-context (&optional todo-only match)
+    "Identical search to `org-match-sparse-tree', but shows the content of the matches."
+   (interactive "P")
+  (org-agenda-prepare-buffers (list (current-buffer)))
+   (org-overview)
+   (org-remove-occur-highlights)
+  (org-scan-tags '(progn (org-show-entry)
+                         (org-show-context))
+(cdr (org-make-tags-matcher match)) todo-only))
+#+END_SRC
+
+** Org Visual Customizations                                         :Visual:
+
+This Chapter contains some visual customizations for org-mode
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-src-fontify-natively t)
+
+  (require 'color)
+  ;; (set-face-attribute 'org-block nil :background
+  ;;                     (color-darken-name
+  ;;                      (face-attribute 'default :background) 5))
+
+  ;; (setq org-src-block-faces '(("emacs-lisp" (:background "#FEF2FF"))
+  ;;                          ("python"     (:background "#E5FFB8"))))
+#+END_SRC
+
+** Org Keys                                                            :Keys:
+#+BEGIN_SRC emacs-lisp
+(define-key global-map "\C-cc" 'org-capture)
+#+END_SRC
+
+** Org Misc                                                        :Unsorted:
+#+BEGIN_SRC emacs-lisp
+;;; Additions to the org mode template alist.
+;;; Note: Most of the templates are defined as yasnippets
+(add-to-list 'org-structure-template-alist '("n" "#+NAME: ?"))
+
+(org-babel-do-load-languages 'org-babel-load-languages
+    '(
+        (shell      . t)
+        (R          . t)
+        (awk        . t)
+        (sqlite     . t)
+        (emacs-lisp . t)
+        (dot        . t)
+    )
+)
+
+
+(add-to-list 'tramp-default-user-alist
+  '("smb" ".*\\'" "alex.stragies"))
+
+;; add default arguments to use when evaluating a source block
+(add-to-list 'org-babel-default-header-args:emacs-lisp
+             '(:noweb . "yes"))
+
+;; add default arguments to use when evaluating a source block
+;;(add-to-list 'org-babel-default-header-args
+;;             '(:noweb . "yes"))
+
+(setq org-default-notes-file (concat org-directory "/notes.org"))
+#+END_SRC
+
+* Keyboard Mappings
+#+NAME: Keyboard-Map-Changed-From-Default
+#+BEGIN_SRC emacs-lisp
+; C-h normally calls 'Help'. This function can be called with F1, and via M-x help
+(global-set-key (kbd "C-h") 'delete-backward-char)
+#+END_SRC
+
+* Document Statistics:
+ # Do not edit below this line, or know exactly what you are doing!
+ # Fold up these lines by visually selecting, then SPC
+
+ # DO NOT EDIT BELOW THIS LINE
+ # Local Variables:
+ # mode: org
+ # End:
+ # --><script src="js/org-render.js"></script></body></html>
