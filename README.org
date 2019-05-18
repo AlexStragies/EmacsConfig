@@ -1,0 +1,17 @@
+ # EmacsConfig
+
+* My Emacs configuration in org mode file format, with a small loader in init.el
+
+** init.el - The initial loader
+- Has configuration for the packacke manager
+- Version & existence check for org-mode
+- some odd few configuration variables
+
+** emacs.org - The main configuration
+- Cleaned up first part with auxillary function
+- Section with automatic installing of all my wanted packages
+- Uncleaned section
+
+** my snippets
+mostly org mode and graphviz stuff
+
