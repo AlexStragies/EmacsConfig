@@ -9,3 +9,16 @@
 
 # Undo-tree save-files
 *.~undo-tree
+
+# Generated file from org conf
+emacs.el
+
+# Is in seperate repo
+snippets/
+
+ac-comphist.dat
+elpa/
+eshell/
+session.*
+transient/
+vimish-fold/
