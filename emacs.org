@@ -559,7 +559,7 @@ END {
 ** Abbreviation file(s)                                               :Files:
 #+BEGIN_SRC emacs-lisp
 (setq abbrev-file-name             ;; tell emacs where to read abbrev
-   "~/.emacs.d/abbrev_defs")    ;; definitions from...
+   "~/.emacs.d/Abbrev/abbrev_defs")    ;; definitions from...
 (setq save-abbrevs t)
 #+END_SRC
 
