@@ -234,48 +234,6 @@ find snippets/ -type f | sed -e 's|snippets/||;s|/|,|' | sort
 (electric-pair-mode)
 
 
-;┌┐ Key Bindings: ┌─────────────────────────────────────────────────────────────
-;└┴───────────────┘
-
-; Leader Key configuration
-(evil-leader/set-leader "ä")
-(evil-leader/set-key
-  "e" 'find-file
-  "b" 'switch-to-buffer
-  "C" 'hl-line-mode
-  "c" 'my-insert-color-hex
-  "l" 'linum-mode
-  "f" 'fci-mode
-  "s" 'cycle-ispell-languages
-  "R" 'rainbow-delimiters-mode
-  "F" 'set-abbrev-lang-to-French
-  "Z" 'vimish-fold-delete
-  "E" 'set-abbrev-lang-to-English
-  "m" 'menu-bar-mode
-  "P" 'prettify-symbols-mode
-  "\\" 'zin/org-tag-match-context
-  "r" 'er/expand-region
-  "L" 'linum-relative-mode
-  "k" 'kill-buffer )
-
-(define-key evil-motion-state-map "ö" 'evil-ex)
-(define-key evil-normal-state-map (kbd "SPC") 'vimish-fold-toggle)
-(define-key evil-normal-state-map (kbd "TAB") 'hs-toggle-hiding)
-(define-key evil-visual-state-map (kbd "SPC") 'vimish-fold)
-;;
-(global-set-key (kbd "<menu>") 'helm-M-x)
-(global-set-key (kbd "C-:") 'flyspell-auto-correct-previous-word)
-(global-set-key (kbd "¢") 'flyspell-auto-correct-previous-word)
-;;(define-key evil-insert-state-map (kbd "<tab>") 'dabbrev-completion)
-
-; CTRL+<ARROWS> move between Buffers, and wrap around.
-(windmove-default-keybindings 'hyper)
-(setq windmove-wrap-around t)
-
-(require 'key-chord)
-(key-chord-mode 1)
-(key-chord-define evil-insert-state-map  "jk" 'evil-normal-state)
-
 ;;(add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
 
 ;;(add-to-list 'load-path "~/.emacs.d")
@@ -513,7 +471,7 @@ END {
 
 (setq show-paren-style 'expression) ;; highlight whole expression
 ;;(setq show-paren-style 'parenthesis) ;; highlight whole expression
-(set-face-background 'show-paren-match-face "#dddddd")
+;;(set-face-background 'show-paren-match-face "#dddddd")
 
 (require 'whitespace)
 (setq whitespace-style '(face empty tabs trailing))
@@ -582,11 +540,6 @@ Here we set some keys for comfortably switching between languages
 (global-set-key (kbd "H-g") 'set-abbrev-lang-to-German)
 #+END_SRC
 
-** TODO Building abbrev lists from language dictionaries
-
-#+BEGIN_SRC emacs-lisp :tangle no
-;; none yet
-#+END_SRC
 
 * Org mode customizations                                               :Org:
 ** Some tool functions for org                                        :Tools:
@@ -658,6 +611,48 @@ This Chapter contains some visual customizations for org-mode
 * Keyboard Mappings
 #+NAME: Keyboard-Map-Changed-From-Default
 #+BEGIN_SRC emacs-lisp
+;┌┐ Key Bindings: ┌─────────────────────────────────────────────────────────────
+;└┴───────────────┘
+
+; Leader Key configuration
+(evil-leader/set-leader "ä")
+(evil-leader/set-key
+  "e" 'find-file
+  "b" 'switch-to-buffer
+  "C" 'hl-line-mode
+  "c" 'my-insert-color-hex
+  "l" 'linum-mode
+  "f" 'fci-mode
+  "s" 'cycle-ispell-languages
+  "R" 'rainbow-delimiters-mode
+  "F" 'set-abbrev-lang-to-French
+  "Z" 'vimish-fold-delete
+  "E" 'set-abbrev-lang-to-English
+  "m" 'menu-bar-mode
+  "P" 'prettify-symbols-mode
+  "\\" 'zin/org-tag-match-context
+  "r" 'er/expand-region
+  "L" 'linum-relative-mode
+  "k" 'kill-buffer )
+
+(define-key evil-motion-state-map "ö" 'evil-ex)
+(define-key evil-normal-state-map (kbd "SPC") 'vimish-fold-toggle)
+(define-key evil-normal-state-map (kbd "TAB") 'hs-toggle-hiding)
+(define-key evil-visual-state-map (kbd "SPC") 'vimish-fold)
+;;
+(global-set-key (kbd "<menu>") 'helm-M-x)
+(global-set-key (kbd "C-:") 'flyspell-auto-correct-previous-word)
+(global-set-key (kbd "¢") 'flyspell-auto-correct-previous-word)
+;;(define-key evil-insert-state-map (kbd "<tab>") 'dabbrev-completion)
+
+; CTRL+<ARROWS> move between Buffers, and wrap around.
+(windmove-default-keybindings 'hyper)
+(setq windmove-wrap-around t)
+
+(require 'key-chord)
+(key-chord-mode 1)
+(key-chord-define evil-insert-state-map  "jk" 'evil-normal-state)
+
 ; C-h normally calls 'Help'. This function can be called with F1, and via M-x help
 (global-set-key (kbd "C-h") 'delete-backward-char)
 #+END_SRC
