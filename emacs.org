@@ -487,7 +487,7 @@ END {
 ;└┴─────────────────────────────────────┘
 
 ; Setup spelling correction for 4 languages
-(let ((langs '("american" "francais" "deutsch8" "castellano8")))
+(let ((langs '("american" "francais" "deutsch8" "castellano8" "portuguese")))
   (setq lang-ring (make-ring (length langs)))
   (dolist (elem langs) (ring-insert lang-ring elem)))
 
@@ -501,6 +501,9 @@ END {
 (defun set-abbrev-lang-to-Spanish () "" (interactive)
        (setq local-abbrev-table lang-castellano8-mode-abbrev-table))
 
+(defun set-abbrev-lang-to-Portuguese () "" (interactive)
+       (setq local-abbrev-table lang-portuguese-mode-abbrev-table))
+
 (defun set-abbrev-lang-to-German () "" (interactive)
        (setq local-abbrev-table lang-deutsch8-mode-abbrev-table))
 
@@ -511,7 +514,7 @@ END {
     (ispell-change-dictionary lang)))
 
 (defun dont-insert-expansion-char ()  t)    ;; this is the "hook" function
-  (put 'dont-insert-expansion-char 'no-self-insert t)   ;; the hook should have a "no-self-insert"-property set 
+  (put 'dont-insert-expansion-char 'no-self-insert t)   ;; the hook should have a "no-self-insert"-property set
 #+END_SRC
 
 ** Abbreviation file(s)                                               :Files:
@@ -537,6 +540,7 @@ Here we set some keys for comfortably switching between languages
 (global-set-key (kbd "H-e") 'set-abbrev-lang-to-English)
 (global-set-key (kbd "H-f") 'set-abbrev-lang-to-French)
 (global-set-key (kbd "H-s") 'set-abbrev-lang-to-Spanish)
+(global-set-key (kbd "H-p") 'set-abbrev-lang-to-Portuguese)
 (global-set-key (kbd "H-g") 'set-abbrev-lang-to-German)
 #+END_SRC
 
@@ -657,7 +661,7 @@ This Chapter contains some visual customizations for org-mode
 (global-set-key (kbd "C-h") 'delete-backward-char)
 #+END_SRC
 
-* Document Statistics:
+
  # Do not edit below this line, or know exactly what you are doing!
  # Fold up these lines by visually selecting, then SPC
 
