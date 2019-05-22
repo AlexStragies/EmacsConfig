@@ -115,7 +115,7 @@ Nomenclature proposal:
 | linum-relative        |                                   |                    |         |
 | expand-region         |                                   |                    |         |
 | key-chord             |                                   |                    |         |
-|      magit            |                                   |                    |         |
+| magit                 |                                   | (require 'magit)   |         |
 
 ** Code block to verify installation of the specified packages, and install them if they are not.
 
@@ -659,6 +659,8 @@ This Chapter contains some visual customizations for org-mode
 
 ; C-h normally calls 'Help'. This function can be called with F1, and via M-x help
 (global-set-key (kbd "C-h") 'delete-backward-char)
+
+(global-set-key (kbd "C-x g") 'magit-status)
 #+END_SRC
 
 
