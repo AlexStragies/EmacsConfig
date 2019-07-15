@@ -13,8 +13,9 @@
 # Generated file from org conf
 emacs.el
 
-# Is in seperate repo
+# Are in seperate repos
 snippets/
+Abbrev/
 
 ac-comphist.dat
 elpa/
@@ -22,5 +23,4 @@ eshell/
 session.*
 transient/
 vimish-fold/
-Abbrev/
 .org-id-locations
