@@ -257,6 +257,12 @@ find snippets/ -type f | sed -e 's|snippets/||;s|/|,|' | sort
 
 (require 'tramp)
 
+(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
+
+
+;; (print load-path)
+;; (add-to-list 'load-path "~/.emacs.d/contrib/")
+
 ;;(set-variable indent-tabs-mode nil)
 (setq indent-tabs-mode nil)
 (setq js-indent-level 2)
@@ -594,9 +600,12 @@ This Chapter contains some visual customizations for org-mode
         (sqlite     . t)
         (emacs-lisp . t)
         (dot        . t)
+        (gnuplot    . t)
+        (ansible    . t)
     )
 )
 
+(org-babel-lob-ingest "~/.emacs.d/library-of-babel.org")
 
 (add-to-list 'tramp-default-user-alist
   '("smb" ".*\\'" "alex.stragies"))
@@ -632,6 +641,7 @@ This Chapter contains some visual customizations for org-mode
   "F" 'set-abbrev-lang-to-French
   "Z" 'vimish-fold-delete
   "E" 'set-abbrev-lang-to-English
+  "j" 'ace-jump-mode
   "m" 'menu-bar-mode
   "P" 'prettify-symbols-mode
   "\\" 'zin/org-tag-match-context
@@ -640,6 +650,9 @@ This Chapter contains some visual customizations for org-mode
   "k" 'kill-buffer )
 
 (define-key evil-motion-state-map "ö" 'evil-ex)
+(define-key evil-normal-state-map (kbd "√") 'er/expand-region)
+(define-key evil-normal-state-map (kbd "“") 'ace-jump-mode)
+;; Doesn't work: (define-key evil-visual-state-map (kbd "“") 'ace-jump-mode)
 (define-key evil-normal-state-map (kbd "SPC") 'vimish-fold-toggle)
 (define-key evil-normal-state-map (kbd "TAB") 'hs-toggle-hiding)
 (define-key evil-visual-state-map (kbd "SPC") 'vimish-fold)
