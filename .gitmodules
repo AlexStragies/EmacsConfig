@@ -1,0 +1,3 @@
+[submodule "Abbrev"]
+	path = Abbrev
+	url = github:AlexStragies/MultiLangWritingAbbrevs.git
