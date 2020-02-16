@@ -15,7 +15,8 @@ emacs.el
 
 # Are in seperate repos
 snippets/
-Abbrev/
+#Abbrev/
+#library-of-babel/
 
 ac-comphist.dat
 elpa/

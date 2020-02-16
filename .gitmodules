@@ -1,3 +1,6 @@
 [submodule "Abbrev"]
 	path = Abbrev
 	url = github:AlexStragies/MultiLangWritingAbbrevs.git
+[submodule "library-of-babel"]
+	path = library-of-babel
+	url = github:AlexStragies/library-of-babel.git
