@@ -13,8 +13,8 @@
 # Generated file from org conf
 emacs.el
 
-# Are in seperate repos
-snippets/
+# Are in seperate repos (submodules)
+#snippets/
 #Abbrev/
 #library-of-babel/
 

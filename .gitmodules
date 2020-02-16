@@ -4,3 +4,6 @@
 [submodule "library-of-babel"]
 	path = library-of-babel
 	url = github.com:AlexStragies/library-of-babel.git
+[submodule "snippets"]
+	path = snippets
+	url = github.com:AlexStragies/MyYASnippets.git
