@@ -6,6 +6,7 @@
 
 # Backup files
 *~
+.#*
 
 # Undo-tree save-files
 *.~undo-tree
@@ -19,9 +20,14 @@ emacs.el
 #library-of-babel/
 
 ac-comphist.dat
+contrib/
 elpa/
 eshell/
 session.*
+tramp
 transient/
 vimish-fold/
 .org-id-locations
+.lsp*
+.cache
+eln-cache
