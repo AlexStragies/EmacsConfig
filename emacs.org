@@ -28,30 +28,47 @@
 - [[https://github.com/AlexStragies/MyYASnippets.git][My YASnippets]] - Public snippets mostly org mode and graphviz stuff at this point
 
 * Installation
+
+Git clone command:
 #+NAME: INSTALL-STEPS
 #+HEADER: :tangle no
 #+BEGIN_SRC shell :var TARGETDIR="~/.emacs.d" :tangle no
 : "${TARGETDIR:=$HOME/.emacs.d}";
 [ -e "$TARGETDIR" ] && mv $TARGETDIR $TARGETDIR_BACKUP;
 git clone --recurse-submodules -j8 https://github.com/AlexStragies/EmacsConfig $TARGETDIR
-cd $TARGETDIR
-mkdir contrib;
-OBANS="https://raw.githubusercontent.com/AlexStragies/ob-ansible/refs/heads/master/ob-ansible.el"
-curl $OBANS  > contrib/ob-ansible.el
-mkdir contrib/column-marker/;
-COLMARK="https://raw.githubusercontent.com/emacsmirror/column-marker/refs/heads/master/column-marker.el"
-curl $COLMARK > contrib/column-marker/column-marker.el
 #+END_SRC
 
-Ideally, installation should be possible in two ways:
-- git clone the repo with all sub-repos enabled, in one command.
-  Does not work right currently (Manual additions still required).
-- Get all dependencies from within Emacs config on first run/execute
+This leaves `column-marker` still to be downloaded on first run. The following code block takes care of that.
 
-** TODO Complete first two installation options
-Currently, the 2 first options don't produce a /complete/ result, and manual additions are still required
+#+NAME: SCRIPT-DOWNLOAD-COLUMN-MARKER
+#+HEADER: :var BaseURL=""
+#+BEGIN_SRC emacs-lisp
+  (let ((url-base "https://raw.githubusercontent.com/emacsmirror/column-marker/refs/heads/master/")
+        (dest-dir "contrib/column-marker/")                  ; Directory to save the file
+        (filename "column-marker.el"))                       ; File name
+    (let* ((url (concat url-base filename))                  ; Full URL
+           (target-file (expand-file-name filename dest-dir)) ; Full path to the target file
+           (symlink-file (expand-file-name filename "contrib/"))) ; Path for the symlink
+      ;; Ensure the target directory exists
+      (make-directory (file-name-directory target-file) t)
+      ;; Check if the target file exists
+      (if (file-exists-p target-file)
+          (message "File already exists: %s" target-file)
+        (progn
+          (url-copy-file url target-file t)
+          (message "File downloaded to: %s" target-file)))
+      ;; Create a symbolic link in the parent directory
+      (if (file-exists-p symlink-file)
+          (message "Symlink already exists: %s" symlink-file)
+        (progn
+          (make-symbolic-link target-file symlink-file t)
+          (message "Symlink created: %s -> %s" symlink-file target-file)))))
+#+END_SRC
 
 * Using this settings file and emacs
+:PROPERTIES:
+:CUSTOM_ID: Usage
+:END:
 
 When editing the configuration tables below, keep in mind, that some tables require a PostProcessing function to be called after modification.
 For the others, settings should apply automatically after restart of emacs
@@ -136,11 +153,6 @@ Nomenclature proposal:
 #+BEGIN_SRC emacs-lisp :var tbl="" :tangle no
 (cons (car tbl) (cons 'hline (cdr tbl)))
 #+END_SRC
-* Usage
-:PROPERTIES:
-:CUSTOM_ID: Usage
-:END:
-
 * Emacs Configuration
 ** Basic User Interface Settings
 *** Hide the Menu-Bar by default                                    :MenuBar:
