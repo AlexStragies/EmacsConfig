@@ -23,7 +23,6 @@ emacs.el
 #library-of-babel/
 
 ac-comphist.dat
-contrib/
 elpa/
 eshell/
 session.*
