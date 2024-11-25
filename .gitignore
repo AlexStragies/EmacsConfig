@@ -11,6 +11,9 @@
 # Undo-tree save-files
 *.~undo-tree
 
+# Emacs customization file
+custom.el
+
 # Generated file from org conf
 emacs.el
 
