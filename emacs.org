@@ -1,4 +1,4 @@
- # <html -*- mode: org ; coding: utf-8-with-signature -*- >
+﻿ # <html -*- mode: org ; coding: utf-8-with-signature -*- >
  # <script src="js/org-render.js"></script><body><!--
 
 #+Title: The Emacs Config in Org-Mode
@@ -143,12 +143,20 @@ Nomenclature proposal:
 (column-number-mode t) ; This should enable column numbers in the mode line
 #+END_SRC
 
-** Add `load-path` for `contrib` subdir
+** Add `load-path` for `contrib` subdir                             :CONTRIB:
 #+BEGIN_SRC emacs-lisp
 (add-to-list 'load-path "~/.emacs.d/contrib/")
 #+END_SRC
 
 ** Behaviours
+*** custom-file varaible
+
+#+BEGIN_SRC emacs-lisp
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(load custom-file 'noerror)
+#+END_SRC
+
+
 *** Backup-Files                                                     :BACKUP:
 
 How and where to place backups and handles for opened files, and how many version back to keep.
@@ -180,8 +188,8 @@ How and where to place backups and handles for opened files, and how many versio
 (global-set-key (kbd "C-h") 'delete-backward-char)
 #+END_SRC
 
-* Package Configurations                                              :Setup:
-** Evil
+* Package Configurations                                           :Packages:
+** Evil                                                                :EVIL:
 
 Evil is an *e*\xtensible *vi* *l*\ayer for [[http://www.gnu.org/software/emacs/][Emacs]]. It emulates the main features of [[http://www.vim.org/][Vim]], and provides facilities for writing custom extensions. Also see the page on [[http://emacswiki.org/emacs/Evil][EmacsWiki]].
 
@@ -252,7 +260,7 @@ Evil is an *e*\xtensible *vi* *l*\ayer for [[http://www.gnu.org/software/emacs/]
 )
 #+END_SRC
 
-** Helm
+** Helm                                                                :HELM:
 #+NAME: USE-PACKAGE-helm
 #+BEGIN_SRC emacs-lisp
 ;┌┐ Helm Mode: ┌────────────────────────────────────────────────────────────────
@@ -319,7 +327,7 @@ To enhance the user interface with LSP, install `lsp-ui`, which provides feature
 )
 #+END_SRC
 
-** TRAMP
+** TRAMP                                                              :TRAMP:
 #+NAME: USE-PACKAGE-tramp
 #+BEGIN_SRC emacs-lisp
 (use-package tramp
@@ -591,7 +599,7 @@ extracts the initialization strings lines delimited by parenthesis into the belo
 ;└┴────────────────────────┘
 #+END_SRC
 
-** Show Whitespace
+** Show Whitespace                                               :WhiteSpace:
 
 This configuration is useful to show erronenous whitespace.
 
