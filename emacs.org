@@ -1,5 +1,7 @@
 ﻿ # <html -*- mode: org ; coding: utf-8-with-signature -*- >
  # <script src="js/org-render.js"></script><body><!--
+ # This renders this org-file directly to html in certain conditions,
+ # see for details: https://github.com/AlexStragies/ORGJS-Wrapper
 
 #+Title: The Emacs Config in Org-Mode
 #+Author: Alex Stragies
@@ -14,56 +16,61 @@
 .. and a small loader in init.el
 * Overview
 
-** init.el - The initial loader
-- Has configuration for the packacke manager
-- Version & existence check for org-mode
-- Loads main configuration [[https://github.com/AlexStragies/EmacsConfig/blob/master/emacs.org][emacs.org]]
+This configuration is centered around the following topics:
+- ORG mode for multilingual text authoring and documentation
+- EVIL mode for support of the VI text manipulation grammar.
+- GraphViz support optimized for editing/viewing/presenting
+- Literate Devops
 
-** emacs.org - Main File
-- [[https://github.com/AlexStragies/EmacsConfig/blob/master/emacs.org][emacs.org]] - The hybrid org/html configuration file, this file.
-
-** Sub-Module Repos
-- [[https://github.com/AlexStragies/MultiLangWritingAbbrevs.git][Multi Language Writing Abbreviations]] : Abbrev lists for the lazy quick typist
-- [[https://github.com/AlexStragies/library-of-babel.git][My Library of Babel]] - A small collection of functions
-- [[https://github.com/AlexStragies/MyYASnippets.git][My YASnippets]] - Public snippets mostly org mode and graphviz stuff at this point
-
-* Installation
+** Installation                                                         :GIT:
 
 Git clone command:
-#+NAME: INSTALL-STEPS
-#+HEADER: :tangle no
+#+NAME: INSTALL-COMMAND-GIT
 #+BEGIN_SRC shell :var TARGETDIR="~/.emacs.d" :tangle no
 : "${TARGETDIR:=$HOME/.emacs.d}";
 [ -e "$TARGETDIR" ] && mv $TARGETDIR $TARGETDIR_BACKUP;
 git clone --recurse-submodules -j8 https://github.com/AlexStragies/EmacsConfig $TARGETDIR
 #+END_SRC
 
-This leaves `column-marker` still to be downloaded on first run. The following code block takes care of that.
+This leaves `column-marker` still to be downloaded on first run. The following code block should automatically take care of that.
 
 #+NAME: SCRIPT-DOWNLOAD-COLUMN-MARKER
-#+HEADER: :var BaseURL=""
 #+BEGIN_SRC emacs-lisp
-  (let ((url-base "https://raw.githubusercontent.com/emacsmirror/column-marker/refs/heads/master/")
-        (dest-dir "contrib/column-marker/")                  ; Directory to save the file
-        (filename "column-marker.el"))                       ; File name
-    (let* ((url (concat url-base filename))                  ; Full URL
-           (target-file (expand-file-name filename dest-dir)) ; Full path to the target file
-           (symlink-file (expand-file-name filename "contrib/"))) ; Path for the symlink
-      ;; Ensure the target directory exists
-      (make-directory (file-name-directory target-file) t)
-      ;; Check if the target file exists
-      (if (file-exists-p target-file)
-          (message "File already exists: %s" target-file)
-        (progn
-          (url-copy-file url target-file t)
-          (message "File downloaded to: %s" target-file)))
-      ;; Create a symbolic link in the parent directory
-      (if (file-exists-p symlink-file)
-          (message "Symlink already exists: %s" symlink-file)
-        (progn
-          (make-symbolic-link target-file symlink-file t)
-          (message "Symlink created: %s -> %s" symlink-file target-file)))))
+(let ((url-base "https://raw.githubusercontent.com/emacsmirror/column-marker/refs/heads/master/")
+      (dest-dir "contrib/column-marker/")                  ; Directory to save the file
+      (filename "column-marker.el"))                       ; File name
+  (let* ((url (concat url-base filename))                  ; Full URL
+         (target-file (expand-file-name filename dest-dir)) ; Full path to the target file
+         (symlink-file (expand-file-name filename "contrib/"))) ; Path for the symlink
+    ;; Ensure the target directory exists
+    (make-directory (file-name-directory target-file) t)
+    ;; Check if the target file exists
+    (if (file-exists-p target-file)
+        (message "File already exists: %s" target-file)
+      (progn
+        (url-copy-file url target-file t)
+        (message "File downloaded to: %s" target-file)))
+    ;; Create a symbolic link in the parent directory
+    (if (file-exists-p symlink-file)
+        (message "Symlink already exists: %s" symlink-file)
+      (progn
+        (make-symbolic-link target-file symlink-file t)
+        (message "Symlink created: %s -> %s" symlink-file target-file)))))
 #+END_SRC
+
+** Components
+*** init.el - The initial loader
+- Has configuration for the packacke manager
+- Version & existence check for org-mode
+- Loads main configuration [[https://github.com/AlexStragies/EmacsConfig/blob/master/emacs.org][emacs.org]]
+
+*** emacs.org - Main File
+- [[https://github.com/AlexStragies/EmacsConfig/blob/master/emacs.org][emacs.org]] - The hybrid org/html configuration file, click [[https://raw.githubusercontent.com/AlexStragies/EmacsConfig/refs/heads/master/emacs.org][here for raw ORG source]].
+
+*** Sub-Module Repos
+- [[https://github.com/AlexStragies/MultiLangWritingAbbrevs.git][Multi Language Writing Abbreviations]] : Abbrev lists for the lazy quick typist
+- [[https://github.com/AlexStragies/library-of-babel.git][My Library of Babel]] - A small collection of functions
+- [[https://github.com/AlexStragies/MyYASnippets.git][My YASnippets]] - Public snippets mostly org mode and graphviz stuff at this point
 
 * Using this settings file and emacs
 :PROPERTIES:
@@ -208,7 +215,6 @@ Nomenclature proposal:
 (load custom-file 'noerror)
 #+END_SRC
 
-
 *** Backup-Files                                                     :BACKUP:
 
 How and where to place backups and handles for opened files, and how many version back to keep.
@@ -254,8 +260,6 @@ Evil is an *e*\xtensible *vi* *l*\ayer for [[http://www.gnu.org/software/emacs/]
   :init
   (evil-mode 1)  ;; Enable evil-mode
   :config
-  (global-evil-surround-mode 1)
-  (global-evil-matchit-mode 1)
 
   ;; Keybindings
   (define-key evil-motion-state-map "ö" 'evil-ex)
@@ -462,25 +466,25 @@ To enhance the user interface with LSP, install `lsp-ui`, which provides feature
 These packages do not (yet?) have a dedicated chapter above.
 
 #+NAME: Table-My-Packages
-| Package Name          | Package Usage                     | Initialization               | after             | Hooks | Commands |
-|-----------------------+-----------------------------------+------------------------------+-------------------+-------+----------|
-| auto-complete         |                                   |                              |                   |       |          |
-| buffer-move           |                                   |                              |                   |       |          |
-| emmet-mode            | [[https://github.com/smihica/emmet-mode][type HTML quickly with CSS syntax]] |                              |                   |       |          |
-| evil-matchit          | Plugin for E.VI.L                 |                              | evil              |       |          |
-| evil-surround         | Plugin for E.VI.L                 |                              | evil              |       |          |
-| expand-region         |                                   |                              |                   |       |          |
-| helm                  | Helm                              |                              |                   |       |          |
-| highlight-indentation |                                   | highlight-indentation-mode 1 |                   |       |          |
-| key-chord             |                                   |                              |                   |       |          |
-| magit                 |                                   | (require 'magit)             |                   |       |          |
-| org-ac                |                                   |                              | org auto-complete |       |          |
-| org-evil              |                                   |                              | evil              |       |          |
-| evil-vimish-fold      |                                   |                              | evil vimish-fold  |       |          |
-| rainbow-mode          | colorizes in-buffer color codes   | (rainbow-mode)               |                   |       |          |
-| yasnippet             | typing speed-up with templates    | (yas-global-mode)            |                   |       |          |
-| yasnippet-snippets    |                                   |                              | yasnippet         |       |          |
-| ztree                 | Not used yet                      |                              |                   |       |          |
+| Package Name          | Package Usage                     | Configuration                                | after             |
+|-----------------------+-----------------------------------+----------------------------------------------+-------------------|
+| auto-complete         |                                   |                                              |                   |
+| buffer-move           |                                   |                                              |                   |
+| emmet-mode            | [[https://github.com/smihica/emmet-mode][type HTML quickly with CSS syntax]] |                                              |                   |
+| evil-matchit          | Plugin for E.VI.L                 | global-evil-matchit-mode 1                   | evil              |
+| evil-surround         | Plugin for E.VI.L                 | global-evil-surround-mode 1                  | evil              |
+| expand-region         |                                   |                                              |                   |
+| helm                  | Helm                              |                                              |                   |
+| highlight-indentation |                                   | highlight-indentation-mode 1                 |                   |
+| key-chord             |                                   |                                              |                   |
+| magit                 |                                   | (global-set-key (kbd "C-x g") 'magit-status) |                   |
+| org-ac                |                                   |                                              | org auto-complete |
+| org-evil              |                                   |                                              | evil              |
+| evil-vimish-fold      |                                   |                                              | evil vimish-fold  |
+| rainbow-mode          | colorizes in-buffer color codes   | (rainbow-mode)                               |                   |
+| yasnippet             | typing speed-up with templates    | (yas-global-mode)                            |                   |
+| yasnippet-snippets    |                                   |                                              | yasnippet         |
+| ztree                 | Not used yet                      |                                              |                   |
 
 After each modification of the above table, the function Make-Use-Package-Block below must be called.
 
@@ -498,7 +502,6 @@ After each modification of the above table, the function Make-Use-Package-Block 
   (dolist (row table)  ; Iterate over each row in the table
     (let ((pkg (car row))            ; Extract the package name
           (p-config  (nth 2 row))       ; Extract the package init
-          (p-hooks (nth 4 row))       ; Extract the package init
           (p-after (nth 3 row)))     ; Extract the package dependencies
       (cl-labels
           ((wrap-with-prefix
@@ -511,10 +514,9 @@ After each modification of the above table, the function Make-Use-Package-Block 
                "")))  ; Return empty string if `str` is empty
         (princ
          (format
-          "; Package: %s\n(use-package %s\n  :ensure t%s%s%s)\n\n"
+          "; Package: %s\n(use-package %s\n  :ensure t%s%s)\n\n"
           pkg pkg
           (wrap-with-prefix "\n  :after\n  "   p-after)
-          (wrap-with-prefix "\n  :hook\n  "    p-hooks)
           (wrap-with-prefix "\n  :config\n  "  p-config)  ))))))
 
 ;; Call the function with the 'package-names' variable
@@ -539,13 +541,17 @@ After each modification of the above table, the function Make-Use-Package-Block 
 (use-package evil-matchit
   :ensure t
   :after
-  (evil))
+  (evil)
+  :config
+  (global-evil-matchit-mode 1))
 
 ; Package: evil-surround
 (use-package evil-surround
   :ensure t
   :after
-  (evil))
+  (evil)
+  :config
+  (global-evil-surround-mode 1))
 
 ; Package: expand-region
 (use-package expand-region
@@ -569,7 +575,7 @@ After each modification of the above table, the function Make-Use-Package-Block 
 (use-package magit
   :ensure t
   :config
-  (require 'magit))
+  (global-set-key (kbd "C-x g") 'magit-status))
 
 ; Package: org-ac
 (use-package org-ac
@@ -612,36 +618,6 @@ After each modification of the above table, the function Make-Use-Package-Block 
   :ensure t)
 
 #+end_SRC
-
-** Package auto-install                                 :OLD:ELISP:AUTO_HIDE:
-Code block to verify installation of the specified packages, and install them if they are not.
-
-#+NAME: Install-My-Packages
-#+BEGIN_SRC emacs-lisp :noweb yes :colnames t :var pNames=Table-My-Packages[,0] :tangle no
-(dolist (package pNames)
-  (unless (package-installed-p (intern package ))
-    (message "Package %s is not installed, fetching" package)
-    (package-install (intern package))
-))
-#+END_SRC
-
-** Package initialization code                            :OLD:AWK:AUTO_HIDE:
-
-From the above table, the =AWK= code block below receives the third column and
-
-#+NAME: AWK-Extract-Init-Strings
-#+BEGIN_SRC awk :stdin Table-My-Packages[,2]
-/^\(.*\)$/
-#+END_SRC
-
-extracts the initialization strings lines delimited by parenthesis into the below =emacs-lisp= block:
-
-#+RESULTS: AWK-Extract-Init-Strings
-#+BEGIN_SRC emacs-lisp :tangle no
-(rainbow-mode)
-(yas-global-mode)
-(vimish-fold-mode)
-#+END_SRC
 
 * Other Visual Customization                                         :Visual:
 ** Config Section Header                                          :AUTO_HIDE:
@@ -1070,8 +1046,6 @@ Here we set some keys for comfortably switching between languages
 ;└┴─────────────────────────┘
 
 ;;(define-key evil-insert-state-map (kbd "<tab>") 'dabbrev-completion)
-
-(global-set-key (kbd "C-x g") 'magit-status)
 
 (require 'buffer-move) ;; Keybindings defined below
 ; CTRL+<ARROWS> move between Buffers, and wrap around.
