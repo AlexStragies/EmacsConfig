@@ -9,7 +9,7 @@
 #+LINK: firewall     http://langw/
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="css/org-view.css" />
 #+PROPERTY: header-args:emacs-lisp :noweb yes
-#+PROPERTY: header-args:awk :tangle no :results code
+#+PROPERTY: header-args:awk  :tangle no :results code
 #+PROPERTY: header-args:awk+ :wrap SRC emacs-lisp
 #+options: toc:t
 
@@ -22,7 +22,7 @@ This configuration is centered around the following topics:
 - GraphViz support optimized for editing/viewing/presenting
 - Literate Devops
 
-** Installation                                                         :GIT:
+** Installation                                                 :INSTALL:GIT:
 
 Git clone command:
 #+NAME: INSTALL-COMMAND-GIT
@@ -58,16 +58,16 @@ This leaves `column-marker` still to be downloaded on first run. The following c
         (message "Symlink created: %s -> %s" symlink-file target-file)))))
 #+END_SRC
 
-** Components
-*** init.el - The initial loader
+*** Components
+**** init.el - The initial loader
 - Has configuration for the packacke manager
 - Version & existence check for org-mode
 - Loads main configuration [[https://github.com/AlexStragies/EmacsConfig/blob/master/emacs.org][emacs.org]]
 
-*** emacs.org - Main File
+**** emacs.org - Main File
 - [[https://github.com/AlexStragies/EmacsConfig/blob/master/emacs.org][emacs.org]] - The hybrid org/html configuration file, click [[https://raw.githubusercontent.com/AlexStragies/EmacsConfig/refs/heads/master/emacs.org][here for raw ORG source]].
 
-*** Sub-Module Repos
+**** Sub-Module Repos
 - [[https://github.com/AlexStragies/MultiLangWritingAbbrevs.git][Multi Language Writing Abbreviations]] : Abbrev lists for the lazy quick typist
 - [[https://github.com/AlexStragies/library-of-babel.git][My Library of Babel]] - A small collection of functions
 - [[https://github.com/AlexStragies/MyYASnippets.git][My YASnippets]] - Public snippets mostly org mode and graphviz stuff at this point
@@ -76,6 +76,8 @@ This leaves `column-marker` still to be downloaded on first run. The following c
 :PROPERTIES:
 :CUSTOM_ID: Usage
 :END:
+
+As mentioned in the Overview, this configuration is centered around usage of EVIL and ORG. Keep especially the former in mind, if you look up other Emacs ressources.
 
 When editing the configuration tables below, keep in mind, that some tables require a PostProcessing function to be called after modification.
 For the others, settings should apply automatically after restart of emacs
@@ -89,7 +91,6 @@ For the others, settings should apply automatically after restart of emacs
 | *M-Enter*     |        | create new heading at same indent level        |
 | *M-ArrowKey*  |        | promote/demote/raise/lower current heading     |
 | *C-c C-l*     |        | Create/Edit org mode link                      |
-| *C-c e h*     |        | Open export to HTML options                    |
 | *C-c C-x*     | org    | Toggle display of entities as UTF-8 characters |
 | *C-c /*       | org    | org-sparse-display                             |
 | *C-c / m*     | org    | org-sparse-display match by Tag                |
@@ -101,9 +102,9 @@ For the others, settings should apply automatically after restart of emacs
 The following table contains the definition of the leader key:
 
 #+NAME: Table-Leader-Key
-| leader |
-|--------|
-| å      |
+| leader | ace-jump |
+|--------+----------|
+| ð      | æ        |
 
 Change to a key easily reachable, and as of yet unused.
 
@@ -141,7 +142,7 @@ Nomenclature proposal:
               (delete-file filename)
               (message "Deleted file %s." filename)
               (kill-buffer)))
-(message "Not a file visiting buffer!"))))
+            (message "Not a file visiting buffer!"))))
 
 (defun delete-file-visited-by-buffer (buffername)
   "Delete the file visited by the buffer named BUFFERNAME."
@@ -208,7 +209,7 @@ Nomenclature proposal:
 #+END_SRC
 
 ** Behaviours
-*** custom-file varaible
+*** custom-file variable
 
 #+BEGIN_SRC emacs-lisp
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
@@ -247,8 +248,17 @@ How and where to place backups and handles for opened files, and how many versio
 #+END_SRC
 
 * Package Configurations                                           :Packages:
-** Evil                                                                :EVIL:
+Most of this configuration is wrapped up in `(use-package ...)` statements. To enable use of chords, this needs to be enabled:
 
+#+NAME: USE-PACKAGE-EXT-chords
+#+BEGIN_SRC emacs-lisp
+(use-package use-package-chords
+  :ensure t
+  :config (key-chord-mode 1)
+  )
+#+END_SRC
+
+** Evil                                                          :EVIL:CHORD:
 Evil is an *e*\xtensible *vi* *l*\ayer for [[http://www.gnu.org/software/emacs/][Emacs]]. It emulates the main features of [[http://www.vim.org/][Vim]], and provides facilities for writing custom extensions. Also see the page on [[http://emacswiki.org/emacs/Evil][EmacsWiki]].
 
 #+NAME: USE-PACKAGE-evil
@@ -259,14 +269,25 @@ Evil is an *e*\xtensible *vi* *l*\ayer for [[http://www.gnu.org/software/emacs/]
   :ensure t
   :init
   (evil-mode 1)  ;; Enable evil-mode
+  :chords (:map evil-insert-state-map
+                ("jk" . evil-normal-state))
   :config
 
   ;; Keybindings
   (define-key evil-motion-state-map "ö" 'evil-ex)
   (define-key evil-normal-state-map (kbd "√") 'er/expand-region)
-  (define-key evil-normal-state-map (kbd "“") 'ace-jump-mode)
-  (define-key evil-motion-state-map (kbd "TAB") 'org-cycle)
-  )
+)
+#+END_SRC
+
+*** Evil-Org
+#+NAME: USE-PACKAGE-evil-org
+#+BEGIN_SRC emacs-lisp
+(use-package evil-org
+  :ensure t
+  :after (org evil)
+  :diminish
+  :hook (org-mode . evil-org-mode) ; Automatically enable evil-org-mode in org buffers
+)
 #+END_SRC
 
 *** Evil-Leader
@@ -301,7 +322,7 @@ Evil is an *e*\xtensible *vi* *l*\ayer for [[http://www.gnu.org/software/emacs/]
    "k" 'kill-buffer))
 #+END_SRC
 
-*** Vimish-Fold
+*** Vimish-Fold                                                        :FOLD:
 #+NAME: USE-PACKAGE-vimish-fold
 #+BEGIN_SRC emacs-lisp
 (use-package vimish-fold
@@ -316,7 +337,7 @@ Evil is an *e*\xtensible *vi* *l*\ayer for [[http://www.gnu.org/software/emacs/]
 )
 #+END_SRC
 
-** Helm                                                                :HELM:
+** Helm                                                          :HELM:CHORD:
 #+NAME: USE-PACKAGE-helm
 #+BEGIN_SRC emacs-lisp
 ;┌┐ Helm Mode: ┌────────────────────────────────────────────────────────────────
@@ -326,6 +347,7 @@ Evil is an *e*\xtensible *vi* *l*\ayer for [[http://www.gnu.org/software/emacs/]
   ;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
   ;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
   :demand t
+  :chords ("jk" . helm-M-x)
   :bind (
      ("œ"         . helm-M-x)
      ("C-c h o"   . helm-occur)
@@ -342,12 +364,14 @@ Evil is an *e*\xtensible *vi* *l*\ayer for [[http://www.gnu.org/software/emacs/]
 
 ** Ace-Jump
 #+NAME: USE-PACKAGE-ace-jump-mode
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :var acejmp=Table-Leader-Key[2,1]
 (use-package ace-jump-mode
   :ensure t
   :after evil
   :bind
-  ("ï" . ace-jump-mode))  ;; Bind ace-jump-mode to the desired key in normal state
+  ("æ" . ace-jump-mode)  ;; Bind ace-jump-mode to the desired keys
+  ("ï" . ace-jump-mode)
+)
 #+END_SRC
 
 ** Language Server Protocol                                          :JS:LSP:
@@ -370,19 +394,6 @@ To enhance the user interface with LSP, install `lsp-ui`, which provides feature
   :commands lsp-ui-mode)
 #+END_SRC
 
-** key-chord
-#+NAME: USE-PACKAGE-key-chord
-#+BEGIN_SRC emacs-lisp
-(use-package key-chord
-  :ensure t
-  :after (evil helm)
-  :config
-  (key-chord-mode 1)
-  (key-chord-define-global                 "jk" 'helm-M-x)
-  (key-chord-define evil-insert-state-map  "jk" 'evil-normal-state)
-)
-#+END_SRC
-
 ** TRAMP                                                              :TRAMP:
 #+NAME: USE-PACKAGE-tramp
 #+BEGIN_SRC emacs-lisp
@@ -396,7 +407,21 @@ To enhance the user interface with LSP, install `lsp-ui`, which provides feature
 )
 #+END_SRC
 
-** Yasnippet                                                      :yasnippet:
+** HideShow                                                    :BUILTIN:FOLD:
+#+NAME: USE-PACKAGE-hideshow
+#+BEGIN_SRC emacs-lisp
+(use-package hideshow
+  :ensure nil
+  :init     (add-hook #'prog-mode-hook #'hs-minor-mode)
+  :diminish hs-minor-mode
+  :config   (setcdr (assoc 'js-mode hs-special-modes-alist)
+                    '("[{[]" "[}\\]]" "/[*/]" nil))
+  :bind     (:map evil-normal-state-map
+                  ("TAB" . hs-toggle-hiding))
+)
+#+END_SRC
+
+** TODO Yasnippet                                                 :yasnippet:
 *** List of installed yasnippets
 #+NAME: List-installed-yasnippets
 #+HEADER: :tangle no :dir (concat (getenv "HOME") "/.emacs.d/")
@@ -432,10 +457,18 @@ To enhance the user interface with LSP, install `lsp-ui`, which provides feature
 *** YASnippet options
 #+NAME: YASnippet-options
 #+BEGIN_SRC emacs-lisp
-(setq yas-triggers-in-field t)
+(use-package yasnippet
+  :ensure t
+  :config
+  (use-package yasnippet-snippets
+    :ensure t)
+  (yas-global-mode t)
+  (define-key yas-minor-mode-map (kbd "<tab>") nil)
+  (define-key yas-minor-mode-map (kbd "C-'") #'yas-expand)
+  (setq yas-triggers-in-field t))
 #+END_SRC
 
-** Wind-Move
+** Wind-Move                                                :WINDOWS:BUILTIN:
 #+NAME: USE-PACKAGE-windmove
 #+BEGIN_SRC emacs-lisp
 (use-package windmove
@@ -447,18 +480,111 @@ To enhance the user interface with LSP, install `lsp-ui`, which provides feature
 )
 #+END_SRC
 
-** Auto-Complete
-#+NAME: USE-PACKAGE-auto-complete
-#+BEGIN_SRC emacs-lisp
+** WhiteSpace                                                    :WhiteSpace:
 
+This configuration is useful to show erronenous whitespace.
+
+#+BEGIN_SRC emacs-lisp
+(use-package whitespace
+  :config
+  (setq
+    whitespace-style '(face tabs tab-mark trailing newline newline-mark)
+    whitespace-display-mappings '(
+;      (space-mark   ?\     [?\u00B7]     [?.])
+;      (space-mark   ?\xA0  [?\u00A4]     [?_])
+      (newline-mark ?\n    [182 ?\n])
+      (tab-mark     ?\t    [?\u00BB ?\t] [?\\ ?\t])))
+  (global-whitespace-mode t))
 #+END_SRC
 
-** Column-Marker
+** TODO Auto-Complete                                              :COMPLETE:
+#+NAME: USE-PACKAGE-auto-complete
+#+BEGIN_SRC emacs-lisp
+(require 'auto-complete-config)
+(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
+(ac-config-default)
+;(global-auto-complete-mode t’)
+#+END_SRC
+
+** TODO Column-Marker                                                :VISUAL:
 #+NAME: USE-PACKAGE-column-marker
 #+BEGIN_SRC emacs-lisp
 (use-package column-marker
   :load-path "contrib/column-marker/"
 )
+;;(require 'column-marker)
+;;(column-marker-1 79)
+;;(column-marker-2 89)
+;;(column-marker-3 109)
+;(column-marker-create column-marker-4 column-marker-1-face)
+;(column-marker-create column-marker-5 column-marker-1-face)
+;(column-marker-4 2)
+;(column-marker-5 4)
+;(column-marker-create column-marker-6 column-marker-1-face)
+#+END_SRC
+
+** TODO Abbrev                                             :ABBREV:Languages:
+Multilingual Abbreviations & Spelling
+*** Tool functions for language switching etc
+#+BEGIN_SRC emacs-lisp
+; Setup spelling correction for 4 languages
+(let ((langs '("american" "francais" "deutsch8" "castellano8" "portuguese")))
+  (setq lang-ring (make-ring (length langs)))
+  (dolist (elem langs) (ring-insert lang-ring elem)))
+
+(defun cycle-ispell-languages ()
+  (interactive)
+  (let ((lang (ring-ref lang-ring -1)))
+    (ring-insert lang-ring lang)
+    (ispell-change-dictionary lang)))
+
+;; A bunch of functions to change the abbrev tables
+(defun set-abbrev-lang-to-English () "" (interactive)
+       (setq local-abbrev-table lang-american-mode-abbrev-table))
+
+(defun set-abbrev-lang-to-French () "" (interactive)
+       (setq local-abbrev-table lang-francais-mode-abbrev-table))
+
+(defun set-abbrev-lang-to-Spanish () "" (interactive)
+       (setq local-abbrev-table lang-castellano8-mode-abbrev-table))
+
+(defun set-abbrev-lang-to-Portuguese () "" (interactive)
+       (setq local-abbrev-table lang-portuguese-mode-abbrev-table))
+
+(defun set-abbrev-lang-to-German () "" (interactive)
+       (setq local-abbrev-table lang-deutsch8-mode-abbrev-table))
+
+(defun dont-insert-expansion-char ()  t)    ;; this is the "hook" function
+  (put 'dont-insert-expansion-char 'no-self-insert t)   ;; the hook should have a "no-self-insert"-property set
+#+END_SRC
+
+*** Abbreviation file(s)                                              :Files:
+#+BEGIN_SRC emacs-lisp
+(setq abbrev-file-name             ;; tell emacs where to read abbrev
+   "~/.emacs.d/Abbrev/abbrev_defs")    ;; definitions from (does not work)...
+(setq save-abbrevs t)
+#+END_SRC
+
+*** Enabling Abbrevs                                                  :Setup:
+#+BEGIN_SRC emacs-lisp
+(setq-default abbrev-mode t)
+#+END_SRC
+
+*** Language Keys                                                      :Keys:
+
+Here we set some keys for comfortably switching between languages
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key [f6] 'cycle-ispell-languages)
+(global-set-key [f7] 'flyspell-mode)
+(global-set-key (kbd "C-:") 'flyspell-auto-correct-previous-word)
+(global-set-key (kbd "¢") 'flyspell-auto-correct-previous-word)
+
+(global-set-key (kbd "H-e") 'set-abbrev-lang-to-English)
+(global-set-key (kbd "H-f") 'set-abbrev-lang-to-French)
+(global-set-key (kbd "H-s") 'set-abbrev-lang-to-Spanish)
+(global-set-key (kbd "H-p") 'set-abbrev-lang-to-Portuguese)
+(global-set-key (kbd "H-g") 'set-abbrev-lang-to-German)
 #+END_SRC
 
 ** Other packages
@@ -466,6 +592,7 @@ To enhance the user interface with LSP, install `lsp-ui`, which provides feature
 These packages do not (yet?) have a dedicated chapter above.
 
 #+NAME: Table-My-Packages
+#+BEGIN_TABLE
 | Package Name          | Package Usage                     | Configuration                                | after             |
 |-----------------------+-----------------------------------+----------------------------------------------+-------------------|
 | auto-complete         |                                   |                                              |                   |
@@ -479,12 +606,12 @@ These packages do not (yet?) have a dedicated chapter above.
 | key-chord             |                                   |                                              |                   |
 | magit                 |                                   | (global-set-key (kbd "C-x g") 'magit-status) |                   |
 | org-ac                |                                   |                                              | org auto-complete |
-| org-evil              |                                   |                                              | evil              |
 | evil-vimish-fold      |                                   |                                              | evil vimish-fold  |
 | rainbow-mode          | colorizes in-buffer color codes   | (rainbow-mode)                               |                   |
 | yasnippet             | typing speed-up with templates    | (yas-global-mode)                            |                   |
 | yasnippet-snippets    |                                   |                                              | yasnippet         |
-| ztree                 | Not used yet                      |                                              |                   |
+| ztree                 | [[https://codeberg.org/fourier/ztree][Directory tree viewer]]             |                                              |                   |
+#+END_TABLE
 
 After each modification of the above table, the function Make-Use-Package-Block below must be called.
 
@@ -583,12 +710,6 @@ After each modification of the above table, the function Make-Use-Package-Block 
   :after
   (org auto-complete))
 
-; Package: org-evil
-(use-package org-evil
-  :ensure t
-  :after
-  (evil))
-
 ; Package: evil-vimish-fold
 (use-package evil-vimish-fold
   :ensure t
@@ -619,27 +740,10 @@ After each modification of the above table, the function Make-Use-Package-Block 
 
 #+end_SRC
 
-* Other Visual Customization                                         :Visual:
-** Config Section Header                                          :AUTO_HIDE:
-#+NAME: Section-Header-Visual
-#+BEGIN_SRC emacs-lisp
-;┌┐ Visual customizations: ┌────────────────────────────────────────────────────
-;└┴────────────────────────┘
-#+END_SRC
-
-** Show Whitespace                                               :WhiteSpace:
-
-This configuration is useful to show erronenous whitespace.
-
-#+BEGIN_SRC emacs-lisp
-(require 'whitespace)
-(setq whitespace-style '(face empty tabs trailing))
-(global-whitespace-mode t)
-#+END_SRC
-
-** Show pretty symbols for things like lambda, etc                  :Symbols:
-
+* Prettify Symbols                                           :Visual:Symbols:
+Show pretty symbols for things like lambda, etc
 #+NAME: Symbol-Table
+#+BEGIN_TABLE
 | Ugly               | Mode       | Pretty | Reason                      |
 |--------------------+------------+--------+-----------------------------|
 | forEach            | js         | ∀      | std Math Symbol             |
@@ -671,9 +775,9 @@ This configuration is useful to show erronenous whitespace.
 | while              | js         | ⌛    |                             |
 | true               | js         | ①     | True, binary one            |
 | false              | js         | ⓪     | False, binary zero          |
-| if                 | js         | ⁇    |                             |
+| if                 | js         | ⁇     |                             |
 | alert              | js         | ⓐ     |                             |
-| from               | js         | ↤    |                             |
+| from               | js         | ↤     |                             |
 | +=                 | js         | ⥆     |                             |
 | return             | js         | ↲      |                             |
 | replace            | js         | ↕      |                             |
@@ -683,8 +787,8 @@ This configuration is useful to show erronenous whitespace.
 | dolist             | emacs-lisp | ∀      | see js/forEach              |
 | eq                 | emacs-lisp | ≟      |                             |
 | setq               | emacs-lisp | ≔      |                             |
-| nil                | emacs-lisp | ∅    |                             |
-| if                 | emacs-lisp | ⁇    |                             |
+| nil                | emacs-lisp | ∅     |                             |
+| if                 | emacs-lisp | ⁇     |                             |
 | unless             | emacs-lisp | ⁈      |                             |
 | not                | emacs-lisp | ¬      |                             |
 | defun              | emacs-lisp | 𝔽     |                             |
@@ -699,20 +803,19 @@ This configuration is useful to show erronenous whitespace.
 | kbd                | emacs-lisp | 𝕂     |                             |
 | and                | emacs-lisp | ∧      |                             |
 | add-hook           | emacs-lisp | ℍ      |                             |
-| \#+BEGIN_SRC                 | org        | ✎      |                             |
-| \#+begin_SRC                 | org        | ✎      |                             |
-| \#+END_SRC                | org        | ⮴     |                             |
-| \#+end_SRC                | org        | ⮴     |                             |
-| :var                 | org        | 𝕍     |                             |
-| #+NAME:                  | org        | ℕ      |                             |
-| #+RESULTS:                  | org        | ℝ      |                             |
-| #+HEADER:                | org        | ▶    |                             |
+| \#+BEGIN_SRC        | org        | ✎      |                             |
+| \#+END_SRC          | org        | ⮴     |                             |
+| :var               | org        | 𝕍     |                             |
+| #+NAME:            | org        | ℕ      |                             |
+| #+RESULTS:         | org        | ℝ      |                             |
+| #+HEADER:          | org        | ▶     |                             |
 | defun              | Unused     | 𝕗      |                             |
 | defun              | Unused     | Ⓕ     |                             |
 | add-hook           | Unused     | Ⓗ     |                             |
 | define-key         | Unused     | Ⓓ     |                             |
 | for                | python     | ↻     |                             |
 | in                 | python     | ∊      |                             |
+#+END_TABLE
 
 After modifying the above table you have to call the function below:
 #+NAME: AWK-Process-Table-Call
@@ -854,14 +957,13 @@ END {
 )
 #+END_SRC
 
-*** TODO make it unprettify at point in SourceCode blocks
+** TODO make it unprettify at point in SourceCode blocks
 Doesnt work yet, until when CodeBlock is opened seperate frame with =C-c C-'=
 #+BEGIN_SRC emacs-lisp
 (setq prettify-symbols-unprettify-at-point t)
 #+END_SRC
 
-
-* Org mode customizations                                               :Org:
+* Org mode customizations                                               :ORG:
 ** Some tool functions for org                                        :Tools:
 #+BEGIN_SRC emacs-lisp
 (defun zin/org-tag-match-context (&optional todo-only match)
@@ -875,7 +977,7 @@ Doesnt work yet, until when CodeBlock is opened seperate frame with =C-c C-'=
 (cdr (org-make-tags-matcher match)) todo-only))
 #+END_SRC
 
-** Org Visual Customizations                                         :Visual:
+** Org Visual Customizations                                     :ORG:Visual:
 
 This Chapter contains some visual customizations for org-mode
 
@@ -885,7 +987,7 @@ This Chapter contains some visual customizations for org-mode
   (require 'color)
 #+END_SRC
 
-*** Source code blocks formatting
+*** Source code blocks formatting                       :COLORS:FACES:BLOCKS:
 
 This configuration colors the opening '#+BEGIN_' and closing '#+END_'-'SRC' statements with a different (greenish) color, so that these blocks stand out more from the surrounding text.
 
@@ -960,91 +1062,10 @@ The first block below is for the '#+BEGIN_' line, the second one for the backgro
   (setq org-default-notes-file (concat org-directory "/notes.org"))
 #+END_SRC
 
-* Multilingual Abbreviations & Spelling                           :Languages:
-** Tool functions for language switching etc
-#+BEGIN_SRC emacs-lisp
-;┌┐ Spelling Correction & Dictionaries: ┌───────────────────────────────────────
-;└┴─────────────────────────────────────┘
-
-; Setup spelling correction for 4 languages
-(let ((langs '("american" "francais" "deutsch8" "castellano8" "portuguese")))
-  (setq lang-ring (make-ring (length langs)))
-  (dolist (elem langs) (ring-insert lang-ring elem)))
-
-;; A bunch of functions to change the abbrev tables
-(defun set-abbrev-lang-to-English () "" (interactive)
-       (setq local-abbrev-table lang-american-mode-abbrev-table))
-
-(defun set-abbrev-lang-to-French () "" (interactive)
-       (setq local-abbrev-table lang-francais-mode-abbrev-table))
-
-(defun set-abbrev-lang-to-Spanish () "" (interactive)
-       (setq local-abbrev-table lang-castellano8-mode-abbrev-table))
-
-(defun set-abbrev-lang-to-Portuguese () "" (interactive)
-       (setq local-abbrev-table lang-portuguese-mode-abbrev-table))
-
-(defun set-abbrev-lang-to-German () "" (interactive)
-       (setq local-abbrev-table lang-deutsch8-mode-abbrev-table))
-
-(defun cycle-ispell-languages ()
-  (interactive)
-  (let ((lang (ring-ref lang-ring -1)))
-    (ring-insert lang-ring lang)
-    (ispell-change-dictionary lang)))
-
-(defun dont-insert-expansion-char ()  t)    ;; this is the "hook" function
-  (put 'dont-insert-expansion-char 'no-self-insert t)   ;; the hook should have a "no-self-insert"-property set
-#+END_SRC
-
-** Abbreviation file(s)                                               :Files:
-#+BEGIN_SRC emacs-lisp
-(setq abbrev-file-name             ;; tell emacs where to read abbrev
-   "~/.emacs.d/Abbrev/abbrev_defs")    ;; definitions from (does not work)...
-(setq save-abbrevs t)
-#+END_SRC
-
-** Enabling Abbrevs                                                   :Setup:
-#+BEGIN_SRC emacs-lisp
-(setq-default abbrev-mode t)
-#+END_SRC
-
-** Language Keys                                                       :Keys:
-
-Here we set some keys for comfortably switching between languages
-
-#+BEGIN_SRC emacs-lisp
-(global-set-key [f6] 'cycle-ispell-languages)
-(global-set-key [f7] 'flyspell-mode)
-(global-set-key (kbd "C-:") 'flyspell-auto-correct-previous-word)
-(global-set-key (kbd "¢") 'flyspell-auto-correct-previous-word)
-
-(global-set-key (kbd "H-e") 'set-abbrev-lang-to-English)
-(global-set-key (kbd "H-f") 'set-abbrev-lang-to-French)
-(global-set-key (kbd "H-s") 'set-abbrev-lang-to-Spanish)
-(global-set-key (kbd "H-p") 'set-abbrev-lang-to-Portuguese)
-(global-set-key (kbd "H-g") 'set-abbrev-lang-to-German)
-#+END_SRC
-
-* OLD CONFIG
+* UNSORTED CONFIG
 #+BEGIN_SRC emacs-lisp :comments org
-
 ;(require 'highlight-indentation)
 ;(highlight-indentation-mode 1)
-
-;;(require 'column-marker)
-;;(column-marker-1 79)
-;;(column-marker-2 89)
-;;(column-marker-3 109)
-;(column-marker-create column-marker-4 column-marker-1-face)
-;(column-marker-create column-marker-5 column-marker-1-face)
-;(column-marker-4 2)
-;(column-marker-5 4)
-;(column-marker-create column-marker-6 column-marker-1-face)
-
-;┌┐ Behavior customization: ┌───────────────────────────────────────────────────
-;└┴─────────────────────────┘
-
 ;;(define-key evil-insert-state-map (kbd "<tab>") 'dabbrev-completion)
 
 (require 'buffer-move) ;; Keybindings defined below
@@ -1052,17 +1073,11 @@ Here we set some keys for comfortably switching between languages
 
 ;;(add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
 
-(require 'auto-complete-config)
-(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
-(ac-config-default)
-;(global-auto-complete-mode t’)
-
 ;(setq auto-save-file-name-transforms
 ;      `((".*" ,temporary-file-directory t)))
 
 (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
 
-;;(set-variable indent-tabs-mode nil)
 (setq indent-tabs-mode nil)
 (setq js-indent-level 2)
 #+END_SRC
