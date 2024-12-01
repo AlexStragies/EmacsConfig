@@ -32,31 +32,7 @@ Git clone command:
 git clone --recurse-submodules -j8 https://github.com/AlexStragies/EmacsConfig $TARGETDIR
 #+END_SRC
 
-This leaves `column-marker` still to be downloaded on first run. The following code block should automatically take care of that.
-
-#+NAME: SCRIPT-DOWNLOAD-COLUMN-MARKER
-#+BEGIN_SRC emacs-lisp
-(let ((url-base "https://raw.githubusercontent.com/emacsmirror/column-marker/refs/heads/master/")
-      (dest-dir "contrib/column-marker/")                  ; Directory to save the file
-      (filename "column-marker.el"))                       ; File name
-  (let* ((url (concat url-base filename))                  ; Full URL
-         (target-file (expand-file-name filename dest-dir)) ; Full path to the target file
-         (symlink-file (expand-file-name filename "contrib/"))) ; Path for the symlink
-    ;; Ensure the target directory exists
-    (make-directory (file-name-directory target-file) t)
-    ;; Check if the target file exists
-    (if (file-exists-p target-file)
-        (message "File already exists: %s" target-file)
-      (progn
-        (url-copy-file url target-file t)
-        (message "File downloaded to: %s" target-file)))
-    ;; Create a symbolic link in the parent directory
-    (if (file-exists-p symlink-file)
-        (message "Symlink already exists: %s" symlink-file)
-      (progn
-        (make-symbolic-link target-file symlink-file t)
-        (message "Symlink created: %s -> %s" symlink-file target-file)))))
-#+END_SRC
+This leaves `column-marker` still to be downloaded on first run. [[#SCRIPT-DOWNLOAD-COLUMN-MARKER][This block below takes care of that]].
 
 *** Components
 **** init.el - The initial loader
@@ -346,6 +322,7 @@ Evil is an *e*\xtensible *vi* *l*\ayer for [[http://www.gnu.org/software/emacs/]
   ;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
   ;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
   ;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
+  :ensure t
   :demand t
   :chords ("jk" . helm-M-x)
   :bind (
@@ -376,21 +353,21 @@ Evil is an *e*\xtensible *vi* *l*\ayer for [[http://www.gnu.org/software/emacs/]
 
 ** Language Server Protocol                                          :JS:LSP:
 This code will automatically install lsp-mode and set it up to run when opening JavaScript files:
+#+NAME: USE-PACKAGE-lsp-mode
 #+BEGIN_SRC emacs-lisp
 (use-package lsp-mode
-  :ensure t
-  :hook (js-mode . lsp)
+  :ensure   t
+  :hook     (js-mode . lsp)
   :commands lsp
-  :config
-  (setq lsp-prefer-flymake nil)) ;; Use flycheck for diagnostics instead of flymake:
+  :config   (setq lsp-prefer-flymake nil)) ;; Use flycheck for diagnostics instead of flymake:
 #+END_SRC
 
 *** LSP User Interface
 To enhance the user interface with LSP, install `lsp-ui`, which provides features like documentation popups, code lenses, and more:
 #+BEGIN_SRC emacs-lisp
 (use-package lsp-ui
-  :ensure t
-  :hook (js-mode . lsp-ui-mode)
+  :ensure   t
+  :hook     (js-mode . lsp-ui-mode)
   :commands lsp-ui-mode)
 #+END_SRC
 
@@ -399,8 +376,7 @@ To enhance the user interface with LSP, install `lsp-ui`, which provides feature
 #+BEGIN_SRC emacs-lisp
 (use-package tramp
   :init
-  ;; Set default connection method for TRAMP
-  (setq tramp-default-method "ssh")
+  (setq tramp-default-method "ssh") ;; Set default connection method for TRAMP
   :config
   (add-to-list 'tramp-default-user-alist
                '("smb" ".*\\'" "alex.stragies"))
@@ -411,7 +387,7 @@ To enhance the user interface with LSP, install `lsp-ui`, which provides feature
 #+NAME: USE-PACKAGE-hideshow
 #+BEGIN_SRC emacs-lisp
 (use-package hideshow
-  :ensure nil
+  :ensure   nil
   :init     (add-hook #'prog-mode-hook #'hs-minor-mode)
   :diminish hs-minor-mode
   :config   (setcdr (assoc 'js-mode hs-special-modes-alist)
@@ -421,7 +397,20 @@ To enhance the user interface with LSP, install `lsp-ui`, which provides feature
 )
 #+END_SRC
 
-** TODO Yasnippet                                                 :yasnippet:
+** Yasnippet                                                      :yasnippet:
+#+NAME: USE-PACKAGE-Yasnippet
+#+BEGIN_SRC emacs-lisp
+(use-package yasnippet
+  :ensure t
+  :config
+  (use-package yasnippet-snippets
+    :ensure t)
+  (yas-global-mode t)
+  (define-key yas-minor-mode-map (kbd "<tab>") nil)
+  (define-key yas-minor-mode-map (kbd "C-'") #'yas-expand)
+  (setq yas-triggers-in-field t))
+#+END_SRC
+
 *** List of installed yasnippets
 #+NAME: List-installed-yasnippets
 #+HEADER: :tangle no :dir (concat (getenv "HOME") "/.emacs.d/")
@@ -453,20 +442,6 @@ To enhance the user interface with LSP, install `lsp-ui`, which provides feature
 | org-mode          | Named-Source-Code-Block           |
 | org-mode          | table2                            |
 | org-mode          | table3                            |
-
-*** YASnippet options
-#+NAME: YASnippet-options
-#+BEGIN_SRC emacs-lisp
-(use-package yasnippet
-  :ensure t
-  :config
-  (use-package yasnippet-snippets
-    :ensure t)
-  (yas-global-mode t)
-  (define-key yas-minor-mode-map (kbd "<tab>") nil)
-  (define-key yas-minor-mode-map (kbd "C-'") #'yas-expand)
-  (setq yas-triggers-in-field t))
-#+END_SRC
 
 ** Wind-Move                                                :WINDOWS:BUILTIN:
 #+NAME: USE-PACKAGE-windmove
@@ -500,13 +475,48 @@ This configuration is useful to show erronenous whitespace.
 ** TODO Auto-Complete                                              :COMPLETE:
 #+NAME: USE-PACKAGE-auto-complete
 #+BEGIN_SRC emacs-lisp
-(require 'auto-complete-config)
-(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
-(ac-config-default)
-;(global-auto-complete-mode t’)
+(use-package auto-complete-config
+  :ensure auto-complete
+  :bind ("M-<tab>" . my--auto-complete)
+  :init
+  (defun my--auto-complete ()
+    (interactive)
+    (unless (boundp 'auto-complete-mode)
+      (global-auto-complete-mode 1))
+    (auto-complete))
+)
+;(require 'auto-complete-config)
+;(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
+;(ac-config-default)
+;;;(global-auto-complete-mode t’)
 #+END_SRC
 
 ** TODO Column-Marker                                                :VISUAL:
+Column-Marker is not on Melpa, thus needs to be downloaded once:
+#+NAME: SCRIPT-DOWNLOAD-COLUMN-MARKER
+#+BEGIN_SRC emacs-lisp :comments org
+(let ((url-base "https://raw.githubusercontent.com/emacsmirror/column-marker/refs/heads/master/")
+      (dest-dir "contrib/column-marker/")                  ; Directory to save the file
+      (filename "column-marker.el"))                       ; File name
+  (let* ((url (concat url-base filename))                  ; Full URL
+         (target-file (expand-file-name filename dest-dir)) ; Full path to the target file
+         (symlink-file (expand-file-name filename "contrib/"))) ; Path for the symlink
+    ;; Ensure the target directory exists
+    (make-directory (file-name-directory target-file) t)
+    ;; Check if the target file exists
+    (if (file-exists-p target-file)
+        (message "File already exists: %s" target-file)
+      (progn
+        (url-copy-file url target-file t)
+        (message "File downloaded to: %s" target-file)))
+    ;; Create a symbolic link in the parent directory
+    (if (file-exists-p symlink-file)
+        (message "Symlink already exists: %s" symlink-file)
+      (progn
+        (make-symbolic-link target-file symlink-file t)
+        (message "Symlink created: %s -> %s" symlink-file target-file)))))
+#+END_SRC
+
 #+NAME: USE-PACKAGE-column-marker
 #+BEGIN_SRC emacs-lisp
 (use-package column-marker
@@ -592,158 +602,75 @@ Here we set some keys for comfortably switching between languages
 These packages do not (yet?) have a dedicated chapter above.
 
 #+NAME: Table-My-Packages
-#+BEGIN_TABLE
-| Package Name          | Package Usage                     | Configuration                                | after             |
-|-----------------------+-----------------------------------+----------------------------------------------+-------------------|
-| auto-complete         |                                   |                                              |                   |
-| buffer-move           |                                   |                                              |                   |
-| emmet-mode            | [[https://github.com/smihica/emmet-mode][type HTML quickly with CSS syntax]] |                                              |                   |
-| evil-matchit          | Plugin for E.VI.L                 | global-evil-matchit-mode 1                   | evil              |
-| evil-surround         | Plugin for E.VI.L                 | global-evil-surround-mode 1                  | evil              |
-| expand-region         |                                   |                                              |                   |
-| helm                  | Helm                              |                                              |                   |
-| highlight-indentation |                                   | highlight-indentation-mode 1                 |                   |
-| key-chord             |                                   |                                              |                   |
-| magit                 |                                   | (global-set-key (kbd "C-x g") 'magit-status) |                   |
-| org-ac                |                                   |                                              | org auto-complete |
-| evil-vimish-fold      |                                   |                                              | evil vimish-fold  |
-| rainbow-mode          | colorizes in-buffer color codes   | (rainbow-mode)                               |                   |
-| yasnippet             | typing speed-up with templates    | (yas-global-mode)                            |                   |
-| yasnippet-snippets    |                                   |                                              | yasnippet         |
-| ztree                 | [[https://codeberg.org/fourier/ztree][Directory tree viewer]]             |                                              |                   |
-#+END_TABLE
+| Package Name          | Package Usage                     | Configuration                             |
+|-----------------------+-----------------------------------+-------------------------------------------|
+| buffer-move           |                                   |                                           |
+| emmet-mode            | [[https://github.com/smihica/emmet-mode][type HTML quickly with CSS syntax]] |                                           |
+| evil                  | Use VIM Text Manipulation Grammar | [[\#USE-PACKAGE-evil][View Config-Block for *Evil*]]              |
+| evil-leader           | Leader Key Map configuration      | [[\#USE-PACKAGE-evil-leader][View Config-Block for *Evil-Leader*]]       |
+| evil-org              | Evil support for ORG              | [[\#USE-PACKAGE-evil-org][View Config-Block for *Evil-Org*]]          |
+| evil-matchit          | Plugin for E.VI.L                 | (global-evil-matchit-mode  1) :after evil |
+| evil-surround         | Plugin for E.VI.L                 | (global-evil-surround-mode 1) :after evil |
+| expand-region         |                                   |                                           |
+| helm                  | Helm                              | [[\#USE-PACKAGE-helm][View Config-Block for *Helm*]]              |
+| highlight-indentation |                                   | (highlight-indentation-mode 1  )          |
+| key-chord             |                                   | [[#USE-PACKAGE-EXT-chords][View use-package chords Config]]            |
+| magit                 |                                   | :bind ("C-x g" . magit-status)            |
+| org-ac                |                                   | :after (org auto-complete)                |
+| evil-vimish-fold      | Folding like in VIM               | :after (evil vimish-fold)                 |
+| rainbow-mode          | colorizes in-buffer color codes   | (rainbow-mode)                            |
+| yasnippet             | typing speed-up with templates    |                                           |
+| ztree                 | [[https://codeberg.org/fourier/ztree][Directory tree viewer]]             |                                           |
 
-After each modification of the above table, the function Make-Use-Package-Block below must be called.
+To install a new package, and manage the configuration here, just add another line to the above table.
+- First Column :: Package name as in the package manager
+- Second Column :: Freeform text to for short usage hint, ideally linked to package homepage
+- Third Column
+  - Org-Mode link to more elaborate config in dedicated chapter *or*
+  - config string (":config" is prepended, if config string does not start with ":")
 
 *** Use-package
 
-#+NAME: Make-Use-Package-Block
-#+HEADER: :results output code raw :results_switches ":tangle no"
-#+HEADER: :wrap SRC emacs-lisp
+#+NAME: RUN-USE-PACKAGE-STATEMENTS-FROM-TABLE
 #+HEADER: :var package-names=Table-My-Packages
-#+HEADER: :tangle no :colnames t
-#+BEGIN_SRC emacs-lisp
-(defun generate-use-package-declarations (table)
-  "Generate 'use-package' declarations for the packages in the input TABLE."
-  (interactive)
-  (dolist (row table)  ; Iterate over each row in the table
-    (let ((pkg (car row))            ; Extract the package name
-          (p-config  (nth 2 row))       ; Extract the package init
-          (p-after (nth 3 row)))     ; Extract the package dependencies
-      (cl-labels
-          ((wrap-with-prefix
-             (prefix str)
-             (if (not (string-empty-p str))
-                 (concat prefix
-                         (if (and (string-prefix-p "(" str)
-                                (string-suffix-p ")" str))
-                             str (concat "(" str ")")))
-               "")))  ; Return empty string if `str` is empty
-        (princ
-         (format
-          "; Package: %s\n(use-package %s\n  :ensure t%s%s)\n\n"
-          pkg pkg
-          (wrap-with-prefix "\n  :after\n  "   p-after)
-          (wrap-with-prefix "\n  :config\n  "  p-config)  ))))))
+#+BEGIN_SRC emacs-lisp :colnames t :results silent
+  (defun generate-and-run-use-package-declarations (table)
+    "Generate and run 'use-package' declarations for packages in the TABLE.
+  Each row of TABLE should have three columns:
+    | Package Name | Package Description | Configuration |
+
+  A 'use-package' declaration is only generated for rows where the Configuration
+  column is non-empty or starts with '[['. The generated forms are also printed
+  to the `*Messages*` buffer."
+    (interactive)
+    (message "Extracting package configurations from table:")
+    (dolist (row table)
+      (let ((pkg-name (car row))
+            (pkg-desc (nth 1 row))
+            (pkg-config (nth 2 row))
+            )
+        (message (format "Package: %s - %s" pkg-name pkg-desc))
+        (unless (string-prefix-p "[[" pkg-config)
+        (let ((use-package-form
+               (format "(use-package %s :ensure t %s)"
+                       pkg-name
+                       (if (or (not pkg-config)                 ; Check if pkg-config is nil
+                              (string-empty-p pkg-config))     ; Check if pkg-config is an empty string
+                           ""                                   ; Return an empty string
+                         (if (string-prefix-p ":" pkg-config)  ; Check if pkg-config starts with ":"
+                             pkg-config                        ; Return pkg-config as is
+                           (concat ":config " pkg-config)))))) ; Otherwise, prepend ":config " to pkg-config
+          (message "%s" use-package-form)  ; Print the constructed form to the *Messages* buffer
+          (eval (read use-package-form)))  ; Evaluate the constructed form
+        ))))
 
 ;; Call the function with the 'package-names' variable
-(generate-use-package-declarations package-names)
+(generate-and-run-use-package-declarations package-names)
 #+END_SRC
-
-#+RESULTS: Make-Use-Package-Block
-#+begin_SRC emacs-lisp
-; Package: auto-complete
-(use-package auto-complete
-  :ensure t)
-
-; Package: buffer-move
-(use-package buffer-move
-  :ensure t)
-
-; Package: emmet-mode
-(use-package emmet-mode
-  :ensure t)
-
-; Package: evil-matchit
-(use-package evil-matchit
-  :ensure t
-  :after
-  (evil)
-  :config
-  (global-evil-matchit-mode 1))
-
-; Package: evil-surround
-(use-package evil-surround
-  :ensure t
-  :after
-  (evil)
-  :config
-  (global-evil-surround-mode 1))
-
-; Package: expand-region
-(use-package expand-region
-  :ensure t)
-
-; Package: helm
-(use-package helm
-  :ensure t)
-
-; Package: highlight-indentation
-(use-package highlight-indentation
-  :ensure t
-  :config
-  (highlight-indentation-mode 1))
-
-; Package: key-chord
-(use-package key-chord
-  :ensure t)
-
-; Package: magit
-(use-package magit
-  :ensure t
-  :config
-  (global-set-key (kbd "C-x g") 'magit-status))
-
-; Package: org-ac
-(use-package org-ac
-  :ensure t
-  :after
-  (org auto-complete))
-
-; Package: evil-vimish-fold
-(use-package evil-vimish-fold
-  :ensure t
-  :after
-  (evil vimish-fold))
-
-; Package: rainbow-mode
-(use-package rainbow-mode
-  :ensure t
-  :config
-  (rainbow-mode))
-
-; Package: yasnippet
-(use-package yasnippet
-  :ensure t
-  :config
-  (yas-global-mode))
-
-; Package: yasnippet-snippets
-(use-package yasnippet-snippets
-  :ensure t
-  :after
-  (yasnippet))
-
-; Package: ztree
-(use-package ztree
-  :ensure t)
-
-#+end_SRC
 
 * Prettify Symbols                                           :Visual:Symbols:
 Show pretty symbols for things like lambda, etc
 #+NAME: Symbol-Table
-#+BEGIN_TABLE
 | Ugly               | Mode       | Pretty | Reason                      |
 |--------------------+------------+--------+-----------------------------|
 | forEach            | js         | ∀      | std Math Symbol             |
@@ -815,12 +742,6 @@ Show pretty symbols for things like lambda, etc
 | define-key         | Unused     | Ⓓ     |                             |
 | for                | python     | ↻     |                             |
 | in                 | python     | ∊      |                             |
-#+END_TABLE
-
-After modifying the above table you have to call the function below:
-#+NAME: AWK-Process-Table-Call
-#+CALL: AWK-Process-Table()
-to recreate the lisp-code with the new above definitions.
 
 #+BEGIN_SRC emacs-lisp
 (setq-default prettify-symbols-unprettify-at-point t)
@@ -832,129 +753,34 @@ to recreate the lisp-code with the new above definitions.
 ;;(setq python-mode-hook nil)
 #+END_SRC
 
-#+RESULTS: AWK-Process-Table-Call
-#+begin_SRC emacs-lisp
-(add-hook 'js-mode-hook
-  (lambda () (mapc (lambda (pair) (push pair prettify-symbols-alist))
-    '(
-      ("replace"             . ?↕)
-      ("+="                  . ?⥆)
-      ("from"                . ?↤)
-      ("function"            . ?λ)
-      ("innerText"           . ?𝕋)
-      ("querySelectorAll"    . ?ℚ)
-      ("insertBefore"        . ?⥶)
-      ("async"               . ?⑂)
-      (".parentNode"         . ?ℙ)
-      ("insertAdjacentHTML"  . ?@)
-      ("body"                . ?𝔹)
-      ("createElement"       . ?Ⓒ)
-      ("<="                  . ?≤)
-      ("innerHTML"           . ?ℍ)
-      ("document"            . ?𝔻)
-      ("getElementById"      . ?ꖛ)
-      ("=="                  . ?≡)
-      ("querySelector"       . ?𝑸)
-      ("=>"                  . ?⤇)
-      (">="                  . ?≥)
-      ("appendChild"         . ?⥸)
-      ("in"                  . ?∊)
-      ("for"                 . ?↻)
-      ("forEach"             . ?∀)
-      ("console"             . ?🖳)
-      ("var"                 . ?𝕍)
-      ("return"              . ?↲)
-      ("false"               . ?⓪)
-      ("null"                . ?⦰)
-      ("info"                . ?ⓘ)
-      ("alert"               . ?ⓐ)
-      ("while"               . ?⌛)
-      ("beforebegin"         . ?⬑)
-      (".classList"          . ?ℂ)
-      ("==="                 . ?≣)
-      ("if"                  . ?⁇)
-      ("true"                . ?①)
-      ("^="                  . ?≙)
-     ))))
-
-(add-hook 'emacs-lisp-mode-hook
-  (lambda () (mapc (lambda (pair) (push pair prettify-symbols-alist))
-    '(
-      ("unless"              . ?⁈)
-      (":underline"          . ?▁)
-      ("dolist"              . ?∀)
-      ("defun"               . ?𝔽)
-      ("kbd"                 . ?𝕂)
-      ("and"                 . ?∧)
-      ("eq"                  . ?≟)
-      ("add-hook"            . ?ℍ)
-      (":background"         . ?█)
-      (":overline"           . ?▔)
-      (":extend"             . ?⭲)
-      ("setq"                . ?≔)
-      ("require"             . ?ℝ)
-      ("progn"               . ?𝌆)
-      ("define-key"          . ?𝔻)
-      ("nil"                 . ?∅)
-      ("not"                 . ?¬)
-      ("message"             . ?𝕄)
-      ("if"                  . ?⁇)
-     ))))
-
-(add-hook 'org-mode-hook
-  (lambda () (mapc (lambda (pair) (push pair prettify-symbols-alist))
-    '(
-      ("#+RESULTS:"          . ?ℝ)
-      ("\#+END_SRC"          . ?⮴)
-      ("#+HEADER:"           . ?▶)
-      ("#+NAME:"             . ?ℕ)
-      ("\#+begin_SRC"        . ?✎)
-      ("\#+BEGIN_SRC"        . ?✎)
-      (":var"                . ?𝕍)
-      ("\#+end_SRC"          . ?⮴)
-     ))))
-
-(add-hook 'python-mode-hook
-  (lambda () (mapc (lambda (pair) (push pair prettify-symbols-alist))
-    '(
-      ("in"                  . ?∊)
-      ("for"                 . ?↻)
-     ))))
-
-#+end_SRC
-
-#+NAME: AWK-Process-Table
-#+BEGIN_SRC awk :stdin Symbol-Table
-NR<2 {next;}
-{res[$2][$1]=$3}
-ml<length($1){ml=length($1)}
-END {
-  for (mode in res) {
-    if (mode=="Unused") continue;
-    print "(add-hook '"mode"-mode-hook"
-    print "  (lambda () (mapc (lambda (pair) (push pair prettify-symbols-alist))"
-    print "    '("
-    for (item in res[mode]) {
-      padding = gensub(/ /, " ", "g", sprintf("%*s", ml+1-length(item), ""))
-      printf "      (\"%s\"%s . ?%s)\n" , item , padding, res[mode][item]
-    }
-    print "     ))))\n"
-  }
-}
-#+END_SRC
-
 #+NAME: Make-Pretty-Pairs
-#+HEADER: :var prettifyable=Symbol-Table
-#+HEADER: :var targetMode="DoesNotExist" :results list
-#+BEGIN_SRC emacs-lisp :noweb yes :tangle no
-(let ((res nil))
-  (dolist (row prettifyable)
-    (when (string= (nth 1 row ) targetMode)
-      (push (cons (car row) (string-to-char (nth 2 row))) res)
-    )
-  )
-  res
-)
+#+HEADER: :var symbol-table=Symbol-Table
+#+BEGIN_SRC emacs-lisp :results silent
+(let ((language-hooks (make-hash-table :test 'equal)))
+  ;; Process each row to group symbols by language, skipping 'unused
+  (dolist (row symbol-table)
+    (let* ((ugly (nth 0 row))
+           (modes (split-string (nth 1 row) " ")) ; Split modes by space
+           (pretty (nth 2 row))
+           (entry (format "(\"%s\" . ?%s)" ugly pretty)))
+      (dolist (mode modes) ; Process each mode
+        (unless (string= mode "unused") ; Skip entries with mode "unused"
+          (let ((hook-symbol (intern (concat mode "-mode-hook"))))
+            (puthash hook-symbol
+                     (cons entry (gethash hook-symbol language-hooks))
+                     language-hooks))))))
+  ;; Generate, message, and evaluate the hooks
+  (maphash
+   (lambda (hook-symbol entries)
+     (let ((hook-code
+            (format "(add-hook '%s
+  (lambda () (mapc (lambda (pair) (push pair prettify-symbols-alist))
+    '(%s))))"
+                    hook-symbol
+                    (string-join (reverse entries) "\n      "))))
+       (message "%s" hook-code)
+       (eval (read hook-code))))
+   language-hooks))
 #+END_SRC
 
 ** TODO make it unprettify at point in SourceCode blocks
@@ -1064,12 +890,7 @@ The first block below is for the '#+BEGIN_' line, the second one for the backgro
 
 * UNSORTED CONFIG
 #+BEGIN_SRC emacs-lisp :comments org
-;(require 'highlight-indentation)
-;(highlight-indentation-mode 1)
 ;;(define-key evil-insert-state-map (kbd "<tab>") 'dabbrev-completion)
-
-(require 'buffer-move) ;; Keybindings defined below
-; CTRL+<ARROWS> move between Buffers, and wrap around.
 
 ;;(add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
 
