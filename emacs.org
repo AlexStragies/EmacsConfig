@@ -60,20 +60,13 @@ The configuration tables below are automatically read at startup and appropriate
 
 The following table contains the definition of the leader key:
 
-#+NAME: Table-Leader-Key
-| leader | ace-jump |
-|--------+----------|
-| ð      | æ        |
-
 #+NAME: Table-Keys
 | Function | Key | Usage                                                           |
 |----------+-----+-----------------------------------------------------------------|
 | leader   | ð   | Access the 'leader' submenu, will be replaced by a `hydra` soon |
 | ace-jump | æ   | Launch ACE-Mode Jump                                            |
-|          |     |                                                                 |
 
-Change to a key easily reachable, and as of yet unused.
-
+Change to keys easily reachable, and as of yet unused. Then restart emacs, the configuration will extract these keys from the table above.
 
 * Emacs Configuration
 ** Basic User Interface Settings
@@ -170,9 +163,9 @@ How and where to place backups and handles for opened files, and how many versio
 #+END_SRC
 
 * Tool functions                                                      :Tools:
-Nomenclature proposal:
+Nomenclature:
 - xxx-xxx-xxx :: callable functions
-- Xxx-Xxx-XXX :: Tables
+- Table-Xxx-Xxx :: Tables
 
 ** Color Picker                                                      :Colors:
 
@@ -190,6 +183,8 @@ Nomenclature proposal:
                   (insert (apply 'color-rgb-to-hex
                                  (color-name-to-rgb name))))))))
 #+END_SRC
+
+Search this file for `my-insert-color-hex`, if you want to see, where it is mapped to a key.
 
 ** delete-file-visited-by-buffer and delete-file-and-buffer
 #+BEGIN_SRC emacs-lisp
@@ -216,12 +211,6 @@ Nomenclature proposal:
 #+END_SRC
 
 *** TODO Where do I use this function?
-
-** Add Header to tables
-#+NAME: add-header-line
-#+BEGIN_SRC emacs-lisp :var tbl="" :tangle no
-(cons (car tbl) (cons 'hline (cdr tbl)))
-#+END_SRC
 
 * Package Configurations                                           :Packages:
 
