@@ -15,7 +15,6 @@
 
 .. and a small loader in init.el
 * Overview
-
 This configuration is centered around the following topics:
 - ORG mode for multilingual text authoring and documentation
 - EVIL mode for support of the VI text manipulation grammar.
@@ -55,24 +54,8 @@ This leaves `column-marker` still to be downloaded on first run. [[#SCRIPT-DOWNL
 
 As mentioned in the Overview, this configuration is centered around usage of EVIL and ORG. Keep especially the former in mind, if you look up other Emacs ressources.
 
-When editing the configuration tables below, keep in mind, that some tables require a PostProcessing function to be called after modification.
-For the others, settings should apply automatically after restart of emacs
+The configuration tables below are automatically read at startup and appropriate lisp statements are constructed.
 
-** Some useful default Keys                                            :Keys:
-#+NAME: Table_Useful_Keys
-| KeyCombo      | KeyMap | Meaning                                        |
-|---------------+--------+------------------------------------------------|
-| *C-u C-c C-q* |        | Realign all tags                               |
-| *C-c C-c*     | org    | Execute function at point, reformat table      |
-| *M-Enter*     |        | create new heading at same indent level        |
-| *M-ArrowKey*  |        | promote/demote/raise/lower current heading     |
-| *C-c C-l*     |        | Create/Edit org mode link                      |
-| *C-c C-x*     | org    | Toggle display of entities as UTF-8 characters |
-| *C-c /*       | org    | org-sparse-display                             |
-| *C-c / m*     | org    | org-sparse-display match by Tag                |
-| *M-S-↑→↓←*    | org    | in TableEditor: Remove/add Columns/Lines       |
-|               |        |                                                |
-*** TODO Add some more keyboard shortcuts in the usage hint section
 ** Custom keyboard settings
 
 The following table contains the definition of the leader key:
@@ -82,76 +65,31 @@ The following table contains the definition of the leader key:
 |--------+----------|
 | ð      | æ        |
 
+#+NAME: Table-Keys
+| Function | Key | Usage                                                           |
+|----------+-----+-----------------------------------------------------------------|
+| leader   | ð   | Access the 'leader' submenu, will be replaced by a `hydra` soon |
+| ace-jump | æ   | Launch ACE-Mode Jump                                            |
+|          |     |                                                                 |
+
 Change to a key easily reachable, and as of yet unused.
 
-** Tool functions                                                     :Tools:
-Nomenclature proposal:
-- xxx-xxx-xxx :: callable functions
-- Xxx-Xxx-XXX :: Tables
 
-*** Color Picker                                                     :Colors:
-
-#+NAME: My-Insert-Color-Hex
-#+BEGIN_SRC emacs-lisp
-(defun my-insert-color-hex ()
-  "Select a color and insert its hexadecimal format."
-  (interactive "*")
-  (let ((buf (current-buffer)))
-    (list-colors-display
-     nil nil `(lambda (name)
-                (interactive)
-                (quit-window)
-                (with-current-buffer ,buf
-                  (insert (apply 'color-rgb-to-hex
-                                 (color-name-to-rgb name))))))))
-#+END_SRC
-
-*** delete-file-visited-by-buffer and delete-file-and-buffer
-#+BEGIN_SRC emacs-lisp
-(defun delete-file-and-buffer ()
-  "Kill the current buffer and deletes the file it is visiting."
-  (interactive)
-  (let ((filename (buffer-file-name)))
-    (if filename
-        (if (y-or-n-p (concat "Do you really want to delete file " filename " ?"))
-            (progn
-              (delete-file filename)
-              (message "Deleted file %s." filename)
-              (kill-buffer)))
-            (message "Not a file visiting buffer!"))))
-
-(defun delete-file-visited-by-buffer (buffername)
-  "Delete the file visited by the buffer named BUFFERNAME."
-  (interactive "b")
-  (let* ((buffer (get-buffer buffername))
-         (filename (buffer-file-name buffer)))
-    (when filename
-      (delete-file filename)
-      (kill-buffer-ask buffer))))
-#+END_SRC
-
-**** TODO Where do I use this function?
-
-*** Add Header to tables
-#+NAME: add-header-line
-#+BEGIN_SRC emacs-lisp :var tbl="" :tangle no
-(cons (car tbl) (cons 'hline (cdr tbl)))
-#+END_SRC
 * Emacs Configuration
 ** Basic User Interface Settings
 *** Hide the Menu-Bar by default                                    :MenuBar:
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :comments org
 (menu-bar-mode -1)
 #+END_SRC
 
 *** Hide the Tool-Bar by default                                    :ToolBar:
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :comments org
 (tool-bar-mode -1)
 #+END_SRC
 
 *** Line and Column numbers
 #+NAME: SETUP-UI-LINE-NUMS-AND-COLUMN-NUM
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :comments org
 (global-display-line-numbers-mode)
 ;; Enable line numbers by default for file buffers
 (add-hook 'find-file-hook
@@ -217,25 +155,207 @@ How and where to place backups and handles for opened files, and how many versio
 (setq show-paren-style 'expression) ;; highlight whole expression
 #+END_SRC
 
+*** Tabs and Spaces                                              :Whitespace:
+#+NAME: SETTINGS-TABS-N-SPACES
+#+BEGIN_SRC emacs-lisp
+(setq-default tab-width 4
+          indent-tabs-mode nil
+          js-indent-level 2)
+#+END_SRC
+
 *** Global Key Bindings
 #+BEGIN_SRC emacs-lisp
 ; C-h normally calls 'Help'. This function can be called with F1, and via M-x help
 (global-set-key (kbd "C-h") 'delete-backward-char)
 #+END_SRC
 
-* Package Configurations                                           :Packages:
-Most of this configuration is wrapped up in `(use-package ...)` statements. To enable use of chords, this needs to be enabled:
+* Tool functions                                                      :Tools:
+Nomenclature proposal:
+- xxx-xxx-xxx :: callable functions
+- Xxx-Xxx-XXX :: Tables
 
-#+NAME: USE-PACKAGE-EXT-chords
+** Color Picker                                                      :Colors:
+
+#+NAME: My-Insert-Color-Hex
 #+BEGIN_SRC emacs-lisp
+(defun my-insert-color-hex ()
+  "Select a color and insert its hexadecimal format."
+  (interactive "*")
+  (let ((buf (current-buffer)))
+    (list-colors-display
+     nil nil `(lambda (name)
+                (interactive)
+                (quit-window)
+                (with-current-buffer ,buf
+                  (insert (apply 'color-rgb-to-hex
+                                 (color-name-to-rgb name))))))))
+#+END_SRC
+
+** delete-file-visited-by-buffer and delete-file-and-buffer
+#+BEGIN_SRC emacs-lisp
+(defun delete-file-and-buffer ()
+  "Kill the current buffer and deletes the file it is visiting."
+  (interactive)
+  (let ((filename (buffer-file-name)))
+    (if filename
+        (if (y-or-n-p (concat "Do you really want to delete file " filename " ?"))
+            (progn
+              (delete-file filename)
+              (message "Deleted file %s." filename)
+              (kill-buffer)))
+            (message "Not a file visiting buffer!"))))
+
+(defun delete-file-visited-by-buffer (buffername)
+  "Delete the file visited by the buffer named BUFFERNAME."
+  (interactive "b")
+  (let* ((buffer (get-buffer buffername))
+         (filename (buffer-file-name buffer)))
+    (when filename
+      (delete-file filename)
+      (kill-buffer-ask buffer))))
+#+END_SRC
+
+*** TODO Where do I use this function?
+
+** Add Header to tables
+#+NAME: add-header-line
+#+BEGIN_SRC emacs-lisp :var tbl="" :tangle no
+(cons (car tbl) (cons 'hline (cdr tbl)))
+#+END_SRC
+
+* Package Configurations                                           :Packages:
+
+#+NAME: Table-My-Packages
+| Package Name          | Package Usage                     | Configuration                             |
+|-----------------------+-----------------------------------+-------------------------------------------|
+| buffer-move           |                                   |                                           |
+| emmet-mode            | [[https://github.com/smihica/emmet-mode][type HTML quickly with CSS syntax]] |                                           |
+| evil                  | Use VIM Text Manipulation Grammar | [[\#USE-PACKAGE-evil][View Config-Block for *Evil*]]              |
+| evil-leader           | Leader Key Map configuration      | [[\#USE-PACKAGE-evil-leader][View Config-Block for *Evil-Leader*]]       |
+| evil-org              | Evil support for ORG              | [[\#USE-PACKAGE-evil-org][View Config-Block for *Evil-Org*]]          |
+| evil-matchit          | Plugin for E.VI.L                 | (global-evil-matchit-mode  1) :after evil |
+| evil-surround         | Plugin for E.VI.L                 | (global-evil-surround-mode 1) :after evil |
+| expand-region         |                                   |                                           |
+| helm                  | Helm                              | [[\#USE-PACKAGE-helm][View Config-Block for *Helm*]]              |
+| graphviz-dot-mode     |                                   |                                           |
+| highlight-indentation |                                   | (highlight-indentation-mode 1  )          |
+| key-chord             |                                   | [[#USE-PACKAGE-EXT-chords][View use-package chords Config]]            |
+| magit                 |                                   | :bind ("C-x g" . magit-status)            |
+| org-ac                |                                   | :after (org auto-complete)                |
+| evil-vimish-fold      | Folding like in VIM               | :after (evil vimish-fold)                 |
+| rainbow-mode          | colorizes in-buffer color codes   | (rainbow-mode)                            |
+| yasnippet             | typing speed-up with templates    |                                           |
+| ztree                 | [[https://codeberg.org/fourier/ztree][Directory tree viewer]]             |                                           |
+
+To install a new package, and manage the configuration here, just add another line to the above table.
+- First Column:  Package name as in the package manager
+- Second Column: Freeform text to for short usage hint, ideally linked to package homepage
+- Third Column:
+  - Org-Mode link to more elaborate config in dedicated chapter *or*
+  - config string (":config" is prepended, if config string does not start with ":")
+
+Most of the configuration is wrapped up in `(use-package ...)` statements in chapters below.
+
+** Use-Package
+To enable use of chords, this needs to be enabled:
+#+NAME: USE-PACKAGE-EXT-chords
+#+BEGIN_SRC emacs-lisp :comments org
 (use-package use-package-chords
   :ensure t
   :config (key-chord-mode 1)
   )
 #+END_SRC
 
+** Org mode                                                             :ORG:
+#+BEGIN_SRC emacs-lisp
+(use-package org
+  :ensure t
+  :config
+  (setq org-ellipsis "…")
+  (setq org-src-fontify-natively t)
+;┌┐ Key Bindings: ┌─────────────────────────────────────────────────────────────
+;└┴───────────────┘
+  (define-key global-map "\C-cc" 'org-capture)
+  (setq org-default-notes-file (concat org-directory "/notes.org"))
+)
+#+END_SRC
+
+*** Org Babel                                                         :Babel:
+#+BEGIN_SRC emacs-lisp
+(org-babel-do-load-languages 'org-babel-load-languages
+    '(
+        (shell      . t)
+        (R          . t)
+        (awk        . t)
+        (sqlite     . t)
+        (emacs-lisp . t)
+        (dot        . t)
+        (gnuplot    . t)
+        (ansible    . t)
+    )
+)
+
+;;; Personal Library of Babel. Use the first command, if you want to use a
+;;; single library-of-babel.org file:
+(org-babel-lob-ingest "~/.emacs.d/library-of-babel.org")
+;;; Or this block, if you'd prefer to split your library into several files:
+(funcall (lambda (dir)
+         (if (file-directory-p dir)
+             (mapcar (lambda (file) (org-babel-lob-ingest file))
+                     (directory-files dir t ".+\\.org?$" t ))))
+       "~/.emacs.d/library-of-babel")
+
+;; add default arguments to use when evaluating a source block
+(add-to-list 'org-babel-default-header-args:emacs-lisp
+             '(:noweb . "yes"))
+#+END_SRC
+
+*** Source code blocks formatting                       :COLORS:FACES:BLOCKS:
+
+This configuration colors the opening '#+BEGIN_' and closing '#+END_'-'SRC' statements with a different (greenish) color, so that these blocks stand out more from the surrounding text.
+
+The first block below is for the '#+BEGIN_' line, the second one for the '#+END_' line, and the last one specifies the default background for the org source code blocks.
+
+The second block sets specific colors for some specific languages.
+#+BEGIN_SRC emacs-lisp
+(add-hook 'org-mode-hook
+   (lambda ()
+     (if (window-system)
+         (progn (custom-set-faces
+             ; Face used for the line delimiting the begin of source blocks.
+             '(org-block-begin-line
+               ((t (:background "#EAEAFF" :extend t :foreground "#008ED1" :underline "#A7A6AA"))))
+             ; Face used for the line delimiting the end of source blocks.
+             '(org-block-end-line
+               ((t (:background "#EAEAFF" :extend t :foreground "#008ED1" :overline "#A7A6AA"))))
+             ; Face used for the source blocks background.
+             '(org-block
+               ((t (:background "#EFF0F1" :extend t))))
+             )))))
+
+(setq org-src-block-faces
+   '(
+     ("emacs-lisp" (:background "#ececff" :extend t))
+     ("awk"        (:background "#ecffec" :extend t))
+     ("python"     (:background "#E5FFB8" :extend t))
+    ))
+#+END_SRC
+
+*** Some tool functions for org                                       :Tools:
+#+BEGIN_SRC emacs-lisp
+(defun zin/org-tag-match-context (&optional todo-only match)
+    "Identical search to `org-match-sparse-tree', but shows the content of the matches."
+   (interactive "P")
+  (org-agenda-prepare-buffers (list (current-buffer)))
+   (org-overview)
+   (org-remove-occur-highlights)
+  (org-scan-tags '(progn (org-show-entry)
+                         (org-show-context))
+(cdr (org-make-tags-matcher match)) todo-only))
+#+END_SRC
+
 ** Evil                                                          :EVIL:CHORD:
-Evil is an *e*\xtensible *vi* *l*\ayer for [[http://www.gnu.org/software/emacs/][Emacs]]. It emulates the main features of [[http://www.vim.org/][Vim]], and provides facilities for writing custom extensions. Also see the page on [[http://emacswiki.org/emacs/Evil][EmacsWiki]].
+Evil is an Extensible VI Layer for [[http://www.gnu.org/software/emacs/][Emacs]]. It emulates the main features of [[http://www.vim.org/][Vim]], and provides facilities for writing custom extensions. Also see the page on [[http://emacswiki.org/emacs/Evil][EmacsWiki]].
 
 #+NAME: USE-PACKAGE-evil
 #+BEGIN_SRC emacs-lisp
@@ -268,7 +388,7 @@ Evil is an *e*\xtensible *vi* *l*\ayer for [[http://www.gnu.org/software/emacs/]
 
 *** Evil-Leader
 #+NAME: USE-PACKAGE-evil-leader
-#+BEGIN_SRC emacs-lisp :var leader=Table-Leader-Key[2,0]
+#+BEGIN_SRC emacs-lisp :var leader=Table-Keys[2,1] :var leader2=Table-Leader-Key[2,0]
 ; evil-leader, VI leader key plugin
 (use-package evil-leader
   :ensure t
@@ -339,15 +459,18 @@ Evil is an *e*\xtensible *vi* *l*\ayer for [[http://www.gnu.org/software/emacs/]
 )
 #+END_SRC
 
-** Ace-Jump
+** Ace-Jump                                                        :JUMP:NAV:
 #+NAME: USE-PACKAGE-ace-jump-mode
-#+BEGIN_SRC emacs-lisp :var acejmp=Table-Leader-Key[2,1]
+#+BEGIN_SRC emacs-lisp :var acejmp=Table-Keys[3,1] :results silent
 (use-package ace-jump-mode
   :ensure t
   :after evil
-  :bind
-  ("æ" . ace-jump-mode)  ;; Bind ace-jump-mode to the desired keys
-  ("ï" . ace-jump-mode)
+  :config
+  (bind-key acejmp 'ace-jump-mode)  ;; Bind ace-jump-mode to the desired keys
+; The following ways to specify the bind do not work ?!
+;   :bind
+;   (acejmp . ace-jump-mode)          ; This would be the preferred form
+;   (,(cons (acejmp 'ace-jump-mode))) ; Even this would be better than the above
 )
 #+END_SRC
 
@@ -388,6 +511,7 @@ To enhance the user interface with LSP, install `lsp-ui`, which provides feature
 #+BEGIN_SRC emacs-lisp
 (use-package hideshow
   :ensure   nil
+  :after    evil
   :init     (add-hook #'prog-mode-hook #'hs-minor-mode)
   :diminish hs-minor-mode
   :config   (setcdr (assoc 'js-mode hs-special-modes-alist)
@@ -396,52 +520,6 @@ To enhance the user interface with LSP, install `lsp-ui`, which provides feature
                   ("TAB" . hs-toggle-hiding))
 )
 #+END_SRC
-
-** Yasnippet                                                      :yasnippet:
-#+NAME: USE-PACKAGE-Yasnippet
-#+BEGIN_SRC emacs-lisp
-(use-package yasnippet
-  :ensure t
-  :config
-  (use-package yasnippet-snippets
-    :ensure t)
-  (yas-global-mode t)
-  (define-key yas-minor-mode-map (kbd "<tab>") nil)
-  (define-key yas-minor-mode-map (kbd "C-'") #'yas-expand)
-  (setq yas-triggers-in-field t))
-#+END_SRC
-
-*** List of installed yasnippets
-#+NAME: List-installed-yasnippets
-#+HEADER: :tangle no :dir (concat (getenv "HOME") "/.emacs.d/")
-#+HEADER: :colnames yes :post add-header-line(*this*)
-#+BEGIN_SRC sh
-  echo Mode Snippet
-  find snippets/ -path snippets/.git -prune -o -type f  -print \
-      | grep -v 'README.org' \
-      | sed -e 's|snippets/||;s|/| |' | sort
-#+END_SRC
-
-#+RESULTS: List-installed-yasnippets
-| Mode              | Snippet                           |
-|-------------------+-----------------------------------|
-| graphviz-dot-mode | edge-with-attributes-bracket      |
-| graphviz-dot-mode | image-attribute                   |
-| graphviz-dot-mode | invisible-point                   |
-| graphviz-dot-mode | node-with-attributes              |
-| graphviz-dot-mode | node-with-shape-and-label         |
-| graphviz-dot-mode | shape-attribute                   |
-| graphviz-dot-mode | style-invisible                   |
-| graphviz-dot-mode | tooltip-attribute                 |
-| graphviz-dot-mode | url-attribute                     |
-| graphviz-dot-mode | url-attribute-with-injected-class |
-| graphviz-dot-mode | url-attribute-with-target         |
-| org-mode          | Dot-Graph-Template                |
-| org-mode          | header-item                       |
-| org-mode          | Insert-Org-Header-Args            |
-| org-mode          | Named-Source-Code-Block           |
-| org-mode          | table2                            |
-| org-mode          | table3                            |
 
 ** Wind-Move                                                :WINDOWS:BUILTIN:
 #+NAME: USE-PACKAGE-windmove
@@ -456,10 +534,9 @@ To enhance the user interface with LSP, install `lsp-ui`, which provides feature
 #+END_SRC
 
 ** WhiteSpace                                                    :WhiteSpace:
-
 This configuration is useful to show erronenous whitespace.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :comments org
 (use-package whitespace
   :config
   (setq
@@ -488,7 +565,7 @@ This configuration is useful to show erronenous whitespace.
 ;(require 'auto-complete-config)
 ;(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
 ;(ac-config-default)
-;;;(global-auto-complete-mode t’)
+;;;(global-auto-complete-mode t)
 #+END_SRC
 
 ** TODO Column-Marker                                                :VISUAL:
@@ -522,10 +599,10 @@ Column-Marker is not on Melpa, thus needs to be downloaded once:
 (use-package column-marker
   :load-path "contrib/column-marker/"
 )
-;;(require 'column-marker)
-;;(column-marker-1 79)
-;;(column-marker-2 89)
-;;(column-marker-3 109)
+
+;(column-marker-1 79)
+;(column-marker-2 89)
+;(column-marker-3 109)
 ;(column-marker-create column-marker-4 column-marker-1-face)
 ;(column-marker-create column-marker-5 column-marker-1-face)
 ;(column-marker-4 2)
@@ -597,43 +674,58 @@ Here we set some keys for comfortably switching between languages
 (global-set-key (kbd "H-g") 'set-abbrev-lang-to-German)
 #+END_SRC
 
+** Yasnippet                                                      :yasnippet:
+#+NAME: USE-PACKAGE-Yasnippet
+#+BEGIN_SRC emacs-lisp
+(use-package yasnippet
+  :ensure t
+  :config
+  (use-package yasnippet-snippets
+    :ensure t)
+  (yas-global-mode t)
+  (define-key yas-minor-mode-map (kbd "<tab>") nil)
+  (define-key yas-minor-mode-map (kbd "C-'") #'yas-expand)
+  (setq yas-triggers-in-field t))
+#+END_SRC
+
+*** List of installed yasnippets
+#+NAME: List-installed-yasnippets
+#+HEADER: :tangle no :dir (concat (getenv "HOME") "/.emacs.d/")
+#+HEADER: :colnames yes :post add-header-line(*this*)
+#+BEGIN_SRC sh
+echo Mode Snippet
+find snippets/ -path snippets/.git -prune -o -type f  -print \
+    | grep -v 'README.org' \
+    | sed -e 's|snippets/||;s|/| |' | sort
+#+END_SRC
+
+#+RESULTS: List-installed-yasnippets
+| Mode              | Snippet                           |
+|-------------------+-----------------------------------|
+| graphviz-dot-mode | edge-with-attributes-bracket      |
+| graphviz-dot-mode | image-attribute                   |
+| graphviz-dot-mode | invisible-point                   |
+| graphviz-dot-mode | node-with-attributes              |
+| graphviz-dot-mode | node-with-shape-and-label         |
+| graphviz-dot-mode | shape-attribute                   |
+| graphviz-dot-mode | style-invisible                   |
+| graphviz-dot-mode | tooltip-attribute                 |
+| graphviz-dot-mode | url-attribute                     |
+| graphviz-dot-mode | url-attribute-with-injected-class |
+| graphviz-dot-mode | url-attribute-with-target         |
+| org-mode          | Dot-Graph-Template                |
+| org-mode          | header-item                       |
+| org-mode          | Insert-Org-Header-Args            |
+| org-mode          | Named-Source-Code-Block           |
+| org-mode          | table2                            |
+| org-mode          | table3                            |
+
 ** Other packages
-
-These packages do not (yet?) have a dedicated chapter above.
-
-#+NAME: Table-My-Packages
-| Package Name          | Package Usage                     | Configuration                             |
-|-----------------------+-----------------------------------+-------------------------------------------|
-| buffer-move           |                                   |                                           |
-| emmet-mode            | [[https://github.com/smihica/emmet-mode][type HTML quickly with CSS syntax]] |                                           |
-| evil                  | Use VIM Text Manipulation Grammar | [[\#USE-PACKAGE-evil][View Config-Block for *Evil*]]              |
-| evil-leader           | Leader Key Map configuration      | [[\#USE-PACKAGE-evil-leader][View Config-Block for *Evil-Leader*]]       |
-| evil-org              | Evil support for ORG              | [[\#USE-PACKAGE-evil-org][View Config-Block for *Evil-Org*]]          |
-| evil-matchit          | Plugin for E.VI.L                 | (global-evil-matchit-mode  1) :after evil |
-| evil-surround         | Plugin for E.VI.L                 | (global-evil-surround-mode 1) :after evil |
-| expand-region         |                                   |                                           |
-| helm                  | Helm                              | [[\#USE-PACKAGE-helm][View Config-Block for *Helm*]]              |
-| highlight-indentation |                                   | (highlight-indentation-mode 1  )          |
-| key-chord             |                                   | [[#USE-PACKAGE-EXT-chords][View use-package chords Config]]            |
-| magit                 |                                   | :bind ("C-x g" . magit-status)            |
-| org-ac                |                                   | :after (org auto-complete)                |
-| evil-vimish-fold      | Folding like in VIM               | :after (evil vimish-fold)                 |
-| rainbow-mode          | colorizes in-buffer color codes   | (rainbow-mode)                            |
-| yasnippet             | typing speed-up with templates    |                                           |
-| ztree                 | [[https://codeberg.org/fourier/ztree][Directory tree viewer]]             |                                           |
-
-To install a new package, and manage the configuration here, just add another line to the above table.
-- First Column :: Package name as in the package manager
-- Second Column :: Freeform text to for short usage hint, ideally linked to package homepage
-- Third Column
-  - Org-Mode link to more elaborate config in dedicated chapter *or*
-  - config string (":config" is prepended, if config string does not start with ":")
-
-*** Use-package
+The block below creates and runs `use-package` statements for all packages in the table at the start of chapter.
 
 #+NAME: RUN-USE-PACKAGE-STATEMENTS-FROM-TABLE
 #+HEADER: :var package-names=Table-My-Packages
-#+BEGIN_SRC emacs-lisp :colnames t :results silent
+#+BEGIN_SRC emacs-lisp :colnames t :results silent :comments org
   (defun generate-and-run-use-package-declarations (table)
     "Generate and run 'use-package' declarations for packages in the TABLE.
   Each row of TABLE should have three columns:
@@ -786,120 +878,31 @@ Show pretty symbols for things like lambda, etc
 ** TODO make it unprettify at point in SourceCode blocks
 Doesnt work yet, until when CodeBlock is opened seperate frame with =C-c C-'=
 #+BEGIN_SRC emacs-lisp
-(setq prettify-symbols-unprettify-at-point t)
-#+END_SRC
-
-* Org mode customizations                                               :ORG:
-** Some tool functions for org                                        :Tools:
-#+BEGIN_SRC emacs-lisp
-(defun zin/org-tag-match-context (&optional todo-only match)
-    "Identical search to `org-match-sparse-tree', but shows the content of the matches."
-   (interactive "P")
-  (org-agenda-prepare-buffers (list (current-buffer)))
-   (org-overview)
-   (org-remove-occur-highlights)
-  (org-scan-tags '(progn (org-show-entry)
-                         (org-show-context))
-(cdr (org-make-tags-matcher match)) todo-only))
-#+END_SRC
-
-** Org Visual Customizations                                     :ORG:Visual:
-
-This Chapter contains some visual customizations for org-mode
-
-#+BEGIN_SRC emacs-lisp
-  (setq org-src-fontify-natively t)
-
-  (require 'color)
-#+END_SRC
-
-*** Source code blocks formatting                       :COLORS:FACES:BLOCKS:
-
-This configuration colors the opening '#+BEGIN_' and closing '#+END_'-'SRC' statements with a different (greenish) color, so that these blocks stand out more from the surrounding text.
-
-The first block below is for the '#+BEGIN_' line, the second one for the background of the actual code block, and the third block for the '#+END_' line.
-#+BEGIN_SRC emacs-lisp
-  (add-hook 'org-mode-hook
-     (lambda ()
-       (if (window-system)
-           (progn (custom-set-faces
-               ; Face used for the line delimiting the begin of source blocks.
-               '(org-block-begin-line
-                 ((t (:background "#EAEAFF" :extend t :foreground "#008ED1" :underline "#A7A6AA"))))
-               ; Face used for the line delimiting the end of source blocks.
-               '(org-block-end-line
-                 ((t (:background "#EAEAFF" :extend t :foreground "#008ED1" :overline "#A7A6AA"))))
-               ; Face used for the source blocks background.
-               '(org-block
-                 ((t (:background "#EFF0F1" :extend t))))
-               )))))
-
-  (setq org-src-block-faces
-     '(
-       ("emacs-lisp" (:background "#ececff" :extend t))
-       ("awk"        (:background "#ecffec"))
-       ("python"     (:background "#E5FFB8" ))
-      ))
-#+END_SRC
-
-** Org Keys                                                            :Keys:
-#+BEGIN_SRC emacs-lisp
-;┌┐ Key Bindings: ┌─────────────────────────────────────────────────────────────
-;└┴───────────────┘
-(define-key global-map "\C-cc" 'org-capture)
-#+END_SRC
-
-** Org Babel                                                          :Babel:
-#+BEGIN_SRC emacs-lisp
-(org-babel-do-load-languages 'org-babel-load-languages
-    '(
-        (shell      . t)
-        (R          . t)
-        (awk        . t)
-        (sqlite     . t)
-        (emacs-lisp . t)
-        (dot        . t)
-        (gnuplot    . t)
-        (ansible    . t)
-    )
-)
-
-;;; Personal Library of Babel. Use the first command, if you want to use a
-;;; single library-of-babel.org file:
-(org-babel-lob-ingest "~/.emacs.d/library-of-babel.org")
-;;; Or this block, if you'd prefer to split your library into several files:
-(funcall (lambda (dir)
-         (if (file-directory-p dir)
-             (mapcar (lambda (file) (org-babel-lob-ingest file))
-                     (directory-files dir t ".+\\.org?$" t ))))
-       "~/.emacs.d/library-of-babel")
-
-;; add default arguments to use when evaluating a source block
-(add-to-list 'org-babel-default-header-args:emacs-lisp
-             '(:noweb . "yes"))
-#+END_SRC
-
-** Org Misc                                                        :Unsorted:
-#+BEGIN_SRC emacs-lisp
-  ;;; Additions to the org mode template alist.
-  ;;; Note: Most of the templates are defined as yasnippets
-  (add-to-list 'org-structure-template-alist '("n" "#+NAME: ?"))
-
-  (setq org-default-notes-file (concat org-directory "/notes.org"))
+;(setq prettify-symbols-unprettify-at-point t)
 #+END_SRC
 
 * UNSORTED CONFIG
 #+BEGIN_SRC emacs-lisp :comments org
 ;;(define-key evil-insert-state-map (kbd "<tab>") 'dabbrev-completion)
 
-;;(add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
-
 ;(setq auto-save-file-name-transforms
 ;      `((".*" ,temporary-file-directory t)))
 
 (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
-
-(setq indent-tabs-mode nil)
-(setq js-indent-level 2)
 #+END_SRC
 
+* Some useful default Keys                                             :Keys:
+#+NAME: Table_Useful_Keys
+| KeyCombo      | KeyMap | Meaning                                        |
+|---------------+--------+------------------------------------------------|
+| *C-u C-c C-q* |        | Realign all tags                               |
+| *C-c C-c*     | org    | Execute function at point, reformat table      |
+| *M-Enter*     |        | create new heading at same indent level        |
+| *M-ArrowKey*  |        | promote/demote/raise/lower current heading     |
+| *C-c C-l*     |        | Create/Edit org mode link                      |
+| *C-c C-x*     | org    | Toggle display of entities as UTF-8 characters |
+| *C-c /*       | org    | org-sparse-display                             |
+| *C-c / m*     | org    | org-sparse-display match by Tag                |
+| *M-S-↑→↓←*    | org    | in TableEditor: Remove/add Columns/Lines       |
+|               |        |                                                |
+** TODO Add some more keyboard shortcuts in the usage hint section
