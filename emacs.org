@@ -21,17 +21,16 @@ This configuration is centered around the following topics:
 - GraphViz support optimized for editing/viewing/presenting
 - Literate Devops
 
-** Installation                                                 :INSTALL:GIT:
-
-Git clone command:
+** Installation with =git clone=                                  :INSTALL:GIT:
 #+NAME: INSTALL-COMMAND-GIT
 #+BEGIN_SRC shell :var TARGETDIR="~/.emacs.d" :tangle no
 : "${TARGETDIR:=$HOME/.emacs.d}";
-[ -e "$TARGETDIR" ] && mv $TARGETDIR $TARGETDIR_BACKUP;
+[ -e "$TARGETDIR" ] && mv $TARGETDIR ${TARGETDIR}_BACKUP;
 git clone --recurse-submodules -j8 https://github.com/AlexStragies/EmacsConfig $TARGETDIR
 #+END_SRC
+Note: This code block will create a backup of your current directory, with the suffix =_BACKUP=.
 
-This leaves `column-marker` still to be downloaded on first run. [[#SCRIPT-DOWNLOAD-COLUMN-MARKER][This block below takes care of that]].
+All packages but =column-marker= are downloaded (if not installed system-wide) via Emacs. =column-marker= will be downloaded on first run. [[#SCRIPT-DOWNLOAD-COLUMN-MARKER][This block below takes care of that]].
 
 *** Components
 **** init.el - The initial loader
@@ -46,13 +45,19 @@ This leaves `column-marker` still to be downloaded on first run. [[#SCRIPT-DOWNL
 - [[https://github.com/AlexStragies/MultiLangWritingAbbrevs.git][Multi Language Writing Abbreviations]] : Abbrev lists for the lazy quick typist
 - [[https://github.com/AlexStragies/library-of-babel.git][My Library of Babel]] - A small collection of functions
 - [[https://github.com/AlexStragies/MyYASnippets.git][My YASnippets]] - Public snippets mostly org mode and graphviz stuff at this point
+- My Fork of =ob-ansible= with some PRs merged (in `contrib` subdir).
 
-* Using this settings file and emacs
+** Running this configuration
+- On first startup, this configuration will probably spend some minutes downloading quite some packages, depending on what packages are installed at the system package manager level. On e.g. Debian mosts packages in the below list are available as =deb=-packages.
+- Every subsequent startup still takes too long for (my) comfortable use, so running Emacs in =Server Mode= is strongly recommended. Most modern distributions ship a =systemd= user service unit, that just needs to be enabled with =systemctl --user enable emacs.service=
+- When running Emacs is =Server Mode=, launching a new Editor-Client window takes less than 2 seconds, even with largish files.
+
+* Using this settings file and Emacs
 :PROPERTIES:
 :CUSTOM_ID: Usage
 :END:
 
-As mentioned in the Overview, this configuration is centered around usage of EVIL and ORG. Keep especially the former in mind, if you look up other Emacs ressources.
+As mentioned in the Overview, this configuration is centered around usage of EVIL and ORG. Keep especially the former in mind, if you look up other Emacs resources.
 
 The configuration tables below are automatically read at startup and appropriate lisp statements are constructed.
 
@@ -115,7 +120,7 @@ Change to keys easily reachable, and as of yet unused. Then restart emacs, the c
 (add-to-list 'load-path "~/.emacs.d/contrib/")
 #+END_SRC
 
-** Behaviours
+** Behaviors
 *** custom-file variable
 
 #+BEGIN_SRC emacs-lisp
@@ -149,6 +154,7 @@ How and where to place backups and handles for opened files, and how many versio
 #+END_SRC
 
 *** Tabs and Spaces                                              :Whitespace:
+
 #+NAME: SETTINGS-TABS-N-SPACES
 #+BEGIN_SRC emacs-lisp
 (setq-default tab-width 4
@@ -213,19 +219,19 @@ Search this file for `my-insert-color-hex`, if you want to see, where it is mapp
 *** TODO Where do I use this function?
 
 * Package Configurations                                           :Packages:
-
+** Packages Overview Table
 #+NAME: Table-My-Packages
 | Package Name          | Package Usage                                                 | Configuration                             |
 |-----------------------+---------------------------------------------------------------+-------------------------------------------|
 | org                   | [[https://orgmode.org/][Computational Notebooks, Spreadsheets, Authoring, Programming]] | [[#org][View Config Blocks for *ORG*]]              |
-| buffer-move           |                                                               |                                           |
+| buffer-move           | TODO:                                                         |                                           |
 | emmet-mode            | [[https://github.com/smihica/emmet-mode][type HTML quickly with CSS syntax]]                             |                                           |
 | evil                  | Use VIM Text Manipulation Grammar                             | [[\#evil][View Config-Blocks for *Evil*]]             |
 | evil-leader           | Leader Key Map configuration                                  | [[\#evil-leader][View Config-Block for *Evil-Leader*]]       |
 | evil-org              | Evil support for ORG                                          | [[\#evil-org][View Config-Block for *Evil-Org*]]          |
 | evil-matchit          | Plugin for E.VI.L                                             | (global-evil-matchit-mode  1) :after evil |
 | evil-surround         | Plugin for E.VI.L                                             | (global-evil-surround-mode 1) :after evil |
-| expand-region         |                                                               |                                           |
+| expand-region         | TODO:                                                         |                                           |
 | ace-jump              |                                                               | [[\#ace-jump][View Config Block for *Ace-Jump*]]          |
 | helm                  | Helm                                                          | [[\#helm][View Config-Block for *Helm*]]              |
 | lsp                   | Language Server Protocol                                      | [[\#language-server-protocol][View LSP Config Blocks]]                    |
@@ -239,6 +245,7 @@ Search this file for `my-insert-color-hex`, if you want to see, where it is mapp
 | yasnippet             | typing speed-up with templates                                | [[#yasnippet][View Config Block for *YASnippet*]]         |
 | ztree                 | [[https://codeberg.org/fourier/ztree][Directory tree viewer]]                                         |                                           |
 
+*** Adding packages to configuration table
 To install a new package, and manage the configuration here, just add another line to the above table.
 - First Column:  Package name as in the package manager
 - Second Column: Freeform text to for short usage hint, ideally linked to package homepage
@@ -260,14 +267,20 @@ To enable use of chords, this needs to be enabled:
 
 ** Org mode                                                             :ORG:
 #+BEGIN_SRC emacs-lisp
-(use-package org
-  :ensure t
+(use-package org :ensure t
+  ;┌┐ Key Bindings: ┌───────────────────────────────────────────────────────────
+  ;└┴───────────────┘
+  :bind
+    ("C-c c" . org-capture)
   :config
+  ;┌┐ Visual Setup: ┌───────────────────────────────────────────────────────────
+  ;└┴───────────────┘
   (setq org-ellipsis "…")
   (setq org-src-fontify-natively t)
-;┌┐ Key Bindings: ┌─────────────────────────────────────────────────────────────
-;└┴───────────────┘
-  (define-key global-map "\C-cc" 'org-capture)
+  (setq org-hide-emphasis-markers t)
+  ;(define-key global-map "\C-cc" 'org-capture)
+  ;┌┐ Org Files: ┌──────────────────────────────────────────────────────────────
+  ;└┴────────────┘
   (setq org-default-notes-file (concat org-directory "/notes.org"))
 )
 #+END_SRC
@@ -303,7 +316,6 @@ To enable use of chords, this needs to be enabled:
 #+END_SRC
 
 *** Source code blocks formatting                       :COLORS:FACES:BLOCKS:
-
 This configuration colors the opening '#+BEGIN_' and closing '#+END_'-'SRC' statements with a different (greenish) color, so that these blocks stand out more from the surrounding text.
 
 The first block below is for the '#+BEGIN_' line, the second one for the '#+END_' line, and the last one specifies the default background for the org source code blocks.
@@ -474,7 +486,8 @@ This code will automatically install lsp-mode and set it up to run when opening 
   :ensure   t
   :hook     (js-mode . lsp)
   :commands lsp
-  :config   (setq lsp-prefer-flymake nil)) ;; Use flycheck for diagnostics instead of flymake:
+  :config   (setq lsp-prefer-flymake nil) ;; Use flycheck for diagnostics instead of flymake:
+)
 #+END_SRC
 
 *** LSP User Interface
@@ -604,66 +617,72 @@ Column-Marker is not on Melpa, thus needs to be downloaded once:
 
 ** TODO Abbrev                                             :ABBREV:Languages:
 Multilingual Abbreviations & Spelling
-*** Tool functions for language switching etc
-#+BEGIN_SRC emacs-lisp
-; Setup spelling correction for 4 languages
-(let ((langs '("american" "francais" "deutsch8" "castellano8" "portuguese")))
-  (setq lang-ring (make-ring (length langs)))
-  (dolist (elem langs) (ring-insert lang-ring elem)))
+#+BEGIN_DIV_Languages
+#+NAME: Table-Languages
+| Language   | Dictionary  | Notes              | Key (TODO) |
+|------------+-------------+--------------------+------------|
+| English    | american    |                    |            |
+| French     | francais    |                    |            |
+| German     | deutsch8    |                    |            |
+| Spanish    | castellano8 |                    |            |
+| Portuguese | portuguese  | Doesn't work (yet) |            |
+#+END_DIV_Languages
 
+Setup spelling correction language list ring from table above
+#+BEGIN_SRC emacs-lisp :var langList=Table-Languages[2:5,1]
+(setq lang-ring (make-ring (length langList)))
+(dolist (elem langList) (ring-insert lang-ring elem))
+#+END_SRC
+
+*** Language Abbrev and Completion change keys                         :Keys:
+Here we set some keys for comfortably switching between languages
+#+NAME: INC-ABBREV-KEYS
+#+BEGIN_SRC emacs-lisp :tangle no
+:bind
+  ([f6]  . cycle-ispell-languages)
+  ([f7]  . flyspell-mode)
+  ("C-:" . flyspell-auto-correct-previous-word)
+  ("¢"   . flyspell-auto-correct-previous-word)
+#+END_SRC
+
+*** Abbreviation file(s)                                              :Files:
+#+NAME: INC-ABBREV-FILES
+#+BEGIN_SRC emacs-lisp :tangle no
+(setq abbrev-file-name             ;; tell emacs where to read abbrev
+   "~/.emacs.d/Abbrev/abbrev_defs")    ;; definitions from (does not work)...
+#+END_SRC
+
+*** Enabling Abbrevs                                                  :Setup:
+#+BEGIN_SRC emacs-lisp :comments org :noweb yes
+<<INC-ABBREV-FUNCTIONS>>
+
+(use-package abbrev :ensure nil
+  <<INC-ABBREV-KEYS>>
+  :config
+  (setq-default abbrev-mode t)
+  <<INC-ABBREV-FILES>>
+  (setq save-abbrevs t)
+)
+#+END_SRC
+
+*** Tool functions for language switching etc
+#+NAME: INC-ABBREV-FUNCTIONS
+#+BEGIN_SRC emacs-lisp :tangle no
 (defun cycle-ispell-languages ()
   (interactive)
   (let ((lang (ring-ref lang-ring -1)))
     (ring-insert lang-ring lang)
-    (ispell-change-dictionary lang)))
+    (ispell-change-dictionary lang)
+    (set-abbrev-lang lang)))
 
-;; A bunch of functions to change the abbrev tables
-(defun set-abbrev-lang-to-English () "" (interactive)
-       (setq local-abbrev-table lang-american-mode-abbrev-table))
+(defun set-abbrev-lang (dictLang) "" (interactive)
+  (setq local-abbrev-table
+     (eval (read (format "lang-%s-mode-abbrev-table" dictLang)))))
 
-(defun set-abbrev-lang-to-French () "" (interactive)
-       (setq local-abbrev-table lang-francais-mode-abbrev-table))
-
-(defun set-abbrev-lang-to-Spanish () "" (interactive)
-       (setq local-abbrev-table lang-castellano8-mode-abbrev-table))
-
-(defun set-abbrev-lang-to-Portuguese () "" (interactive)
-       (setq local-abbrev-table lang-portuguese-mode-abbrev-table))
-
-(defun set-abbrev-lang-to-German () "" (interactive)
-       (setq local-abbrev-table lang-deutsch8-mode-abbrev-table))
-
-(defun dont-insert-expansion-char ()  t)    ;; this is the "hook" function
-  (put 'dont-insert-expansion-char 'no-self-insert t)   ;; the hook should have a "no-self-insert"-property set
-#+END_SRC
-
-*** Abbreviation file(s)                                              :Files:
-#+BEGIN_SRC emacs-lisp
-(setq abbrev-file-name             ;; tell emacs where to read abbrev
-   "~/.emacs.d/Abbrev/abbrev_defs")    ;; definitions from (does not work)...
-(setq save-abbrevs t)
-#+END_SRC
-
-*** Enabling Abbrevs                                                  :Setup:
-#+BEGIN_SRC emacs-lisp
-(setq-default abbrev-mode t)
-#+END_SRC
-
-*** Language Keys                                                      :Keys:
-
-Here we set some keys for comfortably switching between languages
-
-#+BEGIN_SRC emacs-lisp
-(global-set-key [f6] 'cycle-ispell-languages)
-(global-set-key [f7] 'flyspell-mode)
-(global-set-key (kbd "C-:") 'flyspell-auto-correct-previous-word)
-(global-set-key (kbd "¢") 'flyspell-auto-correct-previous-word)
-
-(global-set-key (kbd "H-e") 'set-abbrev-lang-to-English)
-(global-set-key (kbd "H-f") 'set-abbrev-lang-to-French)
-(global-set-key (kbd "H-s") 'set-abbrev-lang-to-Spanish)
-(global-set-key (kbd "H-p") 'set-abbrev-lang-to-Portuguese)
-(global-set-key (kbd "H-g") 'set-abbrev-lang-to-German)
+;;(defun dont-insert-expansion-char ()  t)
+;;  (put 'dont-insert-expansion-char 'no-self-insert t)
+(defun dont-insert-expansion-char ()      ;; this is the "hook" function
+  (put 'dont-insert-expansion-char 'no-self-insert t))   ;; the hook should have a "no-self-insert"-property set
 #+END_SRC
 
 ** Yasnippet                                                      :yasnippet:
@@ -677,7 +696,8 @@ Here we set some keys for comfortably switching between languages
   (yas-global-mode t)
   (define-key yas-minor-mode-map (kbd "<tab>") nil)
   (define-key yas-minor-mode-map (kbd "C-'") #'yas-expand)
-  (setq yas-triggers-in-field t))
+  (setq yas-triggers-in-field t)
+)
 #+END_SRC
 
 *** List of installed yasnippets
@@ -718,35 +738,35 @@ The block below creates and runs `use-package` statements for all packages in th
 #+NAME: RUN-USE-PACKAGE-STATEMENTS-FROM-TABLE
 #+HEADER: :var package-names=Table-My-Packages
 #+BEGIN_SRC emacs-lisp :colnames t :results silent :comments org
-  (defun generate-and-run-use-package-declarations (table)
-    "Generate and run 'use-package' declarations for packages in the TABLE.
-  Each row of TABLE should have three columns:
-    | Package Name | Package Description | Configuration |
+(defun generate-and-run-use-package-declarations (table)
+  "Generate and run 'use-package' declarations for packages in the TABLE.
+Each row of TABLE should have three columns:
+  | Package Name | Package Description | Configuration |
 
-  A 'use-package' declaration is only generated for rows where the Configuration
-  column is non-empty or starts with '[['. The generated forms are also printed
-  to the `*Messages*` buffer."
-    (interactive)
-    (message "Extracting package configurations from table:")
-    (dolist (row table)
-      (let ((pkg-name (car row))
-            (pkg-desc (nth 1 row))
-            (pkg-config (nth 2 row))
-            )
-        (message (format "Package: %s - %s" pkg-name pkg-desc))
-        (unless (string-prefix-p "[[" pkg-config)
-        (let ((use-package-form
-               (format "(use-package %s :ensure t %s)"
-                       pkg-name
-                       (if (or (not pkg-config)                 ; Check if pkg-config is nil
-                              (string-empty-p pkg-config))     ; Check if pkg-config is an empty string
-                           ""                                   ; Return an empty string
-                         (if (string-prefix-p ":" pkg-config)  ; Check if pkg-config starts with ":"
-                             pkg-config                        ; Return pkg-config as is
-                           (concat ":config " pkg-config)))))) ; Otherwise, prepend ":config " to pkg-config
-          (message "%s" use-package-form)  ; Print the constructed form to the *Messages* buffer
-          (eval (read use-package-form)))  ; Evaluate the constructed form
-        ))))
+A 'use-package' declaration is only generated for rows where the Configuration
+column is non-empty or starts with '[['. The generated forms are also printed
+to the `*Messages*` buffer."
+  (interactive)
+  (message "Extracting package configurations from table:")
+  (dolist (row table)
+    (let ((pkg-name (car row))
+          (pkg-desc (nth 1 row))
+          (pkg-config (nth 2 row))
+          )
+      (message (format "Package: %s - %s" pkg-name pkg-desc))
+      (unless (string-prefix-p "[[" pkg-config)
+      (let ((use-package-form
+             (format "(use-package %s :ensure t %s)"
+                     pkg-name
+                     (if (or (not pkg-config)                 ; Check if pkg-config is nil
+                            (string-empty-p pkg-config))     ; Check if pkg-config is an empty string
+                         ""                                   ; Return an empty string
+                       (if (string-prefix-p ":" pkg-config)  ; Check if pkg-config starts with ":"
+                           pkg-config                        ; Return pkg-config as is
+                         (concat ":config " pkg-config)))))) ; Otherwise, prepend ":config " to pkg-config
+        (message "%s" use-package-form)  ; Print the constructed form to the *Messages* buffer
+        (eval (read use-package-form)))  ; Evaluate the constructed form
+      ))))
 
 ;; Call the function with the 'package-names' variable
 (generate-and-run-use-package-declarations package-names)
@@ -839,7 +859,7 @@ Show pretty symbols for things like lambda, etc
 
 #+NAME: Make-Pretty-Pairs
 #+HEADER: :var symbol-table=Symbol-Table
-#+BEGIN_SRC emacs-lisp :results silent
+#+BEGIN_SRC emacs-lisp
 (let ((language-hooks (make-hash-table :test 'equal)))
   ;; Process each row to group symbols by language, skipping 'unused
   (dolist (row symbol-table)
@@ -871,16 +891,6 @@ Show pretty symbols for things like lambda, etc
 Doesnt work yet, until when CodeBlock is opened seperate frame with =C-c C-'=
 #+BEGIN_SRC emacs-lisp
 ;(setq prettify-symbols-unprettify-at-point t)
-#+END_SRC
-
-* UNSORTED CONFIG
-#+BEGIN_SRC emacs-lisp :comments org
-;;(define-key evil-insert-state-map (kbd "<tab>") 'dabbrev-completion)
-
-;(setq auto-save-file-name-transforms
-;      `((".*" ,temporary-file-directory t)))
-
-(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
 #+END_SRC
 
 * Some useful default Keys                                             :Keys:
