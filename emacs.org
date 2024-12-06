@@ -617,7 +617,7 @@ Column-Marker is not on Melpa, thus needs to be downloaded once:
 
 ** TODO Abbrev                                             :ABBREV:Languages:
 Multilingual Abbreviations & Spelling
-#+BEGIN_DIV_Languages
+
 #+NAME: Table-Languages
 | Language   | Dictionary  | Notes              | Key (TODO) |
 |------------+-------------+--------------------+------------|
@@ -626,7 +626,6 @@ Multilingual Abbreviations & Spelling
 | German     | deutsch8    |                    |            |
 | Spanish    | castellano8 |                    |            |
 | Portuguese | portuguese  | Doesn't work (yet) |            |
-#+END_DIV_Languages
 
 Setup spelling correction language list ring from table above
 #+BEGIN_SRC emacs-lisp :var langList=Table-Languages[2:5,1]
@@ -895,8 +894,8 @@ Doesnt work yet, until when CodeBlock is opened seperate frame with =C-c C-'=
 
 * Some useful default Keys                                             :Keys:
 #+NAME: Table_Useful_Keys
-| KeyCombo      | KeyMap | Meaning                                        |
-|---------------+--------+------------------------------------------------|
+| KeyCombo    | KeyMap | Meaning                                        |
+|-------------+--------+------------------------------------------------|
 | *C-u C-c C-q* |        | Realign all tags                               |
 | *C-c C-c*     | org    | Execute function at point, reformat table      |
 | *M-Enter*     |        | create new heading at same indent level        |
@@ -906,5 +905,4 @@ Doesnt work yet, until when CodeBlock is opened seperate frame with =C-c C-'=
 | *C-c /*       | org    | org-sparse-display                             |
 | *C-c / m*     | org    | org-sparse-display match by Tag                |
 | *M-S-↑→↓←*    | org    | in TableEditor: Remove/add Columns/Lines       |
-|               |        |                                                |
 ** TODO Add some more keyboard shortcuts in the usage hint section
