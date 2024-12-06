@@ -215,26 +215,29 @@ Search this file for `my-insert-color-hex`, if you want to see, where it is mapp
 * Package Configurations                                           :Packages:
 
 #+NAME: Table-My-Packages
-| Package Name          | Package Usage                     | Configuration                             |
-|-----------------------+-----------------------------------+-------------------------------------------|
-| buffer-move           |                                   |                                           |
-| emmet-mode            | [[https://github.com/smihica/emmet-mode][type HTML quickly with CSS syntax]] |                                           |
-| evil                  | Use VIM Text Manipulation Grammar | [[\#USE-PACKAGE-evil][View Config-Block for *Evil*]]              |
-| evil-leader           | Leader Key Map configuration      | [[\#USE-PACKAGE-evil-leader][View Config-Block for *Evil-Leader*]]       |
-| evil-org              | Evil support for ORG              | [[\#USE-PACKAGE-evil-org][View Config-Block for *Evil-Org*]]          |
-| evil-matchit          | Plugin for E.VI.L                 | (global-evil-matchit-mode  1) :after evil |
-| evil-surround         | Plugin for E.VI.L                 | (global-evil-surround-mode 1) :after evil |
-| expand-region         |                                   |                                           |
-| helm                  | Helm                              | [[\#USE-PACKAGE-helm][View Config-Block for *Helm*]]              |
-| graphviz-dot-mode     |                                   |                                           |
-| highlight-indentation |                                   | (highlight-indentation-mode 1  )          |
-| key-chord             |                                   | [[#USE-PACKAGE-EXT-chords][View use-package chords Config]]            |
-| magit                 |                                   | :bind ("C-x g" . magit-status)            |
-| org-ac                |                                   | :after (org auto-complete)                |
-| evil-vimish-fold      | Folding like in VIM               | :after (evil vimish-fold)                 |
-| rainbow-mode          | colorizes in-buffer color codes   | (rainbow-mode)                            |
-| yasnippet             | typing speed-up with templates    |                                           |
-| ztree                 | [[https://codeberg.org/fourier/ztree][Directory tree viewer]]             |                                           |
+| Package Name          | Package Usage                                                 | Configuration                             |
+|-----------------------+---------------------------------------------------------------+-------------------------------------------|
+| org                   | [[https://orgmode.org/][Computational Notebooks, Spreadsheets, Authoring, Programming]] | [[#org][View Config Blocks for *ORG*]]              |
+| buffer-move           |                                                               |                                           |
+| emmet-mode            | [[https://github.com/smihica/emmet-mode][type HTML quickly with CSS syntax]]                             |                                           |
+| evil                  | Use VIM Text Manipulation Grammar                             | [[\#evil][View Config-Blocks for *Evil*]]             |
+| evil-leader           | Leader Key Map configuration                                  | [[\#evil-leader][View Config-Block for *Evil-Leader*]]       |
+| evil-org              | Evil support for ORG                                          | [[\#evil-org][View Config-Block for *Evil-Org*]]          |
+| evil-matchit          | Plugin for E.VI.L                                             | (global-evil-matchit-mode  1) :after evil |
+| evil-surround         | Plugin for E.VI.L                                             | (global-evil-surround-mode 1) :after evil |
+| expand-region         |                                                               |                                           |
+| ace-jump              |                                                               | [[\#ace-jump][View Config Block for *Ace-Jump*]]          |
+| helm                  | Helm                                                          | [[\#helm][View Config-Block for *Helm*]]              |
+| lsp                   | Language Server Protocol                                      | [[\#language-server-protocol][View LSP Config Blocks]]                    |
+| graphviz-dot-mode     |                                                               |                                           |
+| highlight-indentation |                                                               | (highlight-indentation-mode 1  )          |
+| key-chord             |                                                               | [[\#use-package][View use-package chords Config]]            |
+| magit                 |                                                               | :bind ("C-x g" . magit-status)            |
+| org-ac                |                                                               | :after (org auto-complete)                |
+| evil-vimish-fold      | Folding like in VIM                                           | :after (evil vimish-fold)                 |
+| rainbow-mode          | colorizes in-buffer color codes                               | (rainbow-mode)                            |
+| yasnippet             | typing speed-up with templates                                | [[#yasnippet][View Config Block for *YASnippet*]]         |
+| ztree                 | [[https://codeberg.org/fourier/ztree][Directory tree viewer]]                                         |                                           |
 
 To install a new package, and manage the configuration here, just add another line to the above table.
 - First Column:  Package name as in the package manager
@@ -377,7 +380,7 @@ Evil is an Extensible VI Layer for [[http://www.gnu.org/software/emacs/][Emacs]]
 
 *** Evil-Leader
 #+NAME: USE-PACKAGE-evil-leader
-#+BEGIN_SRC emacs-lisp :var leader=Table-Keys[2,1] :var leader2=Table-Leader-Key[2,0]
+#+BEGIN_SRC emacs-lisp :var leader=Table-Keys[2,1]
 ; evil-leader, VI leader key plugin
 (use-package evil-leader
   :ensure t
