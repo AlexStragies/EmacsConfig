@@ -66,10 +66,12 @@ The configuration tables below are automatically read at startup and appropriate
 The following table contains the definition of the leader key:
 
 #+NAME: Table-Keys
-| Function | Key | Usage                                                           |
-|----------+-----+-----------------------------------------------------------------|
-| leader   | ð   | Access the 'leader' submenu, will be replaced by a `hydra` soon |
-| ace-jump | æ   | Launch ACE-Mode Jump                                            |
+| Function        | Key | Usage                                                                  |
+|-----------------+-----+------------------------------------------------------------------------|
+| leader          | ð   | Access the 'leader' submenu, will be replaced by a `hydra` soon        |
+| ace-jump        | æ   | Launch ACE-Mode Jump                                                   |
+| cycle-lang      | F6  | Cycle among the configured languages (You can't yet change that here)  |
+| toggle-flycheck | F7  | Toggle On/Off FlyCheck Spell checking (You can't yet change that here) |
 
 Change to keys easily reachable, and as of yet unused. Then restart emacs, the configuration will extract these keys from the table above.
 
@@ -170,8 +172,8 @@ How and where to place backups and handles for opened files, and how many versio
 
 * Tool functions                                                      :Tools:
 Nomenclature:
-- xxx-xxx-xxx :: callable functions
-- Table-Xxx-Xxx :: Tables
+- =xxx-xxx-xxx= :: callable functions
+- =Table-Xxx-Xxx= :: Tables
 
 ** Color Picker                                                      :Colors:
 
@@ -192,7 +194,7 @@ Nomenclature:
 
 Search this file for `my-insert-color-hex`, if you want to see, where it is mapped to a key.
 
-** delete-file-visited-by-buffer and delete-file-and-buffer
+** =delete-file-visited-by-buffer= and =delete-file-and-buffer=
 #+BEGIN_SRC emacs-lisp
 (defun delete-file-and-buffer ()
   "Kill the current buffer and deletes the file it is visiting."
@@ -221,29 +223,31 @@ Search this file for `my-insert-color-hex`, if you want to see, where it is mapp
 * Package Configurations                                           :Packages:
 ** Packages Overview Table
 #+NAME: Table-My-Packages
-| Package Name          | Package Usage                                                 | Configuration                             |
-|-----------------------+---------------------------------------------------------------+-------------------------------------------|
-| org                   | [[https://orgmode.org/][Computational Notebooks, Spreadsheets, Authoring, Programming]] | [[#org][View Config Blocks for *ORG*]]              |
-| buffer-move           | TODO:                                                         |                                           |
-| emmet-mode            | [[https://github.com/smihica/emmet-mode][type HTML quickly with CSS syntax]]                             |                                           |
-| evil                  | Use VIM Text Manipulation Grammar                             | [[\#evil][View Config-Blocks for *Evil*]]             |
-| evil-leader           | Leader Key Map configuration                                  | [[\#evil-leader][View Config-Block for *Evil-Leader*]]       |
-| evil-org              | Evil support for ORG                                          | [[\#evil-org][View Config-Block for *Evil-Org*]]          |
-| evil-matchit          | Plugin for E.VI.L                                             | (global-evil-matchit-mode  1) :after evil |
-| evil-surround         | Plugin for E.VI.L                                             | (global-evil-surround-mode 1) :after evil |
-| expand-region         | TODO:                                                         |                                           |
-| ace-jump              |                                                               | [[\#ace-jump][View Config Block for *Ace-Jump*]]          |
-| helm                  | Helm                                                          | [[\#helm][View Config-Block for *Helm*]]              |
-| lsp                   | Language Server Protocol                                      | [[\#language-server-protocol][View LSP Config Blocks]]                    |
-| graphviz-dot-mode     |                                                               |                                           |
-| highlight-indentation |                                                               | (highlight-indentation-mode 1  )          |
-| key-chord             |                                                               | [[\#use-package][View use-package chords Config]]            |
-| magit                 |                                                               | :bind ("C-x g" . magit-status)            |
-| org-ac                |                                                               | :after (org auto-complete)                |
-| evil-vimish-fold      | Folding like in VIM                                           | :after (evil vimish-fold)                 |
-| rainbow-mode          | colorizes in-buffer color codes                               | (rainbow-mode)                            |
-| yasnippet             | typing speed-up with templates                                | [[#yasnippet][View Config Block for *YASnippet*]]         |
-| ztree                 | [[https://codeberg.org/fourier/ztree][Directory tree viewer]]                                         |                                           |
+| Package Name          | Package Usage                                   | Configuration                       |
+|-----------------------+-------------------------------------------------+-------------------------------------|
+| org                   | [[https://orgmode.org/][Notebooks, Spreadsheets, Authoring, Programming]] | [[#org][View Config Blocks for *ORG*]]        |
+| buffer-move           | TODO:                                           |                                     |
+| emmet-mode            | [[https://github.com/smihica/emmet-mode][type HTML quickly with CSS syntax]]               |                                     |
+| evil                  | Use VIM Text Manipulation Grammar               | [[\#evil][View Config-Blocks for *Evil*]]       |
+| evil-leader           | Leader Key Map configuration                    | [[\#evil-leader][View Config-Block for *Evil-Leader*]] |
+| evil-org              | Evil support for ORG                            | [[\#evil-org][View Config-Block for *Evil-Org*]]    |
+| evil-matchit          | Plugin for E.VI.L                               | (global-!!-mode 1) :after evil      |
+| evil-surround         | Plugin for E.VI.L                               | (global-!!-mode 1) :after evil      |
+| expand-region         | TODO:                                           |                                     |
+| ace-jump              |                                                 | [[\#ace-jump][View Config Block for *Ace-Jump*]]    |
+| helm                  | Helm                                            | [[\#helm][View Config-Block for *Helm*]]        |
+| lsp                   | Language Server Protocol                        | [[\#language-server-protocol][View LSP Config Blocks]]              |
+| graphviz-dot-mode     |                                                 |                                     |
+| highlight-indentation |                                                 | (!!-mode 1)                         |
+| key-chord             |                                                 | [[\#use-package][View use-package chords Config]]      |
+| magit                 |                                                 | :bind ("C-x g" . magit-status)      |
+| org-ac                |                                                 | :after (org auto-complete)          |
+| mixed-pitch           |                                                 | :hook (org-mode . !!-mode)          |
+| evil-vimish-fold      | Folding like in VIM                             | :after (evil vimish-fold)           |
+| rainbow-mode          | colorizes in-buffer color codes                 | (!!)                                |
+| yasnippet             | typing speed-up with templates                  | [[#yasnippet][View Config Block for *YASnippet*]]   |
+| ztree                 | [[https://codeberg.org/fourier/ztree][Directory tree viewer]]                           |                                     |
+| which-key             | Show possible keyboard short-cuts               | (!!-mode)                           |
 
 *** Adding packages to configuration table
 To install a new package, and manage the configuration here, just add another line to the above table.
@@ -251,7 +255,9 @@ To install a new package, and manage the configuration here, just add another li
 - Second Column: Freeform text to for short usage hint, ideally linked to package homepage
 - Third Column:
   - Org-Mode link to more elaborate config in dedicated chapter *or*
-  - config string (":config" is prepended, if config string does not start with ":")
+  - Configuratiob string, if necessary
+    - "=:config=" is prepended, if configuration string does not start with "=:="
+    - "=!!=" is replaced with the name of the package
 
 Most of the configuration is wrapped up in `(use-package ...)` statements in chapters below.
 
@@ -275,9 +281,10 @@ To enable use of chords, this needs to be enabled:
   :config
   ;┌┐ Visual Setup: ┌───────────────────────────────────────────────────────────
   ;└┴───────────────┘
-  (setq org-ellipsis "…")
-  (setq org-src-fontify-natively t)
-  (setq org-hide-emphasis-markers t)
+  (setq org-ellipsis                 "…"
+     org-src-fontify-natively     t
+     org-hide-emphasis-markers    t
+     org-src-preserve-indentation t)
   ;(define-key global-map "\C-cc" 'org-capture)
   ;┌┐ Org Files: ┌──────────────────────────────────────────────────────────────
   ;└┴────────────┘
@@ -371,11 +378,11 @@ Evil is an Extensible VI Layer for [[http://www.gnu.org/software/emacs/][Emacs]]
   (evil-mode 1)  ;; Enable evil-mode
   :chords (:map evil-insert-state-map
                 ("jk" . evil-normal-state))
+  :bind (:map evil-normal-state-map
+          ("ß" . er/expand-region))
   :config
-
-  ;; Keybindings
   (define-key evil-motion-state-map "ö" 'evil-ex)
-  (define-key evil-normal-state-map (kbd "√") 'er/expand-region)
+  ;(define-key evil-normal-state-map (kbd "ß") 'er/expand-region)
 )
 #+END_SRC
 
@@ -424,7 +431,7 @@ Evil is an Extensible VI Layer for [[http://www.gnu.org/software/emacs/][Emacs]]
 
 *** Vimish-Fold                                                        :FOLD:
 #+NAME: USE-PACKAGE-vimish-fold
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package vimish-fold
   :ensure t
   :bind (
@@ -539,7 +546,7 @@ To enhance the user interface with LSP, install `lsp-ui`, which provides feature
 #+END_SRC
 
 ** WhiteSpace                                                    :WhiteSpace:
-This configuration is useful to show erronenous whitespace.
+This configuration is useful to show erroneous whitespace.
 
 #+BEGIN_SRC emacs-lisp :comments org
 (use-package whitespace
@@ -738,8 +745,8 @@ The block below creates and runs `use-package` statements for all packages in th
 #+HEADER: :var package-names=Table-My-Packages
 #+BEGIN_SRC emacs-lisp :colnames t :results silent :comments org
 (defun generate-and-run-use-package-declarations (table)
-  "Generate and run 'use-package' declarations for packages in the TABLE.
-Each row of TABLE should have three columns:
+  "Generate and run 'use-package' declarations for packages in table.
+Each row of table should have three columns:
   | Package Name | Package Description | Configuration |
 
 A 'use-package' declaration is only generated for rows where the Configuration
@@ -748,24 +755,24 @@ to the `*Messages*` buffer."
   (interactive)
   (message "Extracting package configurations from table:")
   (dolist (row table)
-    (let ((pkg-name (car row))
-          (pkg-desc (nth 1 row))
-          (pkg-config (nth 2 row))
-          )
+    (let ((pkg-name   (car   row))
+         (pkg-desc   (nth 1 row))
+         (pkg-config (nth 2 row)))
       (message (format "Package: %s - %s" pkg-name pkg-desc))
       (unless (string-prefix-p "[[" pkg-config)
-      (let ((use-package-form
+        (let ((form
              (format "(use-package %s :ensure t %s)"
-                     pkg-name
-                     (if (or (not pkg-config)                 ; Check if pkg-config is nil
-                            (string-empty-p pkg-config))     ; Check if pkg-config is an empty string
-                         ""                                   ; Return an empty string
-                       (if (string-prefix-p ":" pkg-config)  ; Check if pkg-config starts with ":"
-                           pkg-config                        ; Return pkg-config as is
-                         (concat ":config " pkg-config)))))) ; Otherwise, prepend ":config " to pkg-config
-        (message "%s" use-package-form)  ; Print the constructed form to the *Messages* buffer
-        (eval (read use-package-form)))  ; Evaluate the constructed form
-      ))))
+                pkg-name
+                (if (or (not pkg-config)               ; Check if pkg-config is nil
+                       (string-empty-p pkg-config))  ; Check if pkg-config is an empty string
+                    ""                               ; Return an empty string
+                  (replace-regexp-in-string "!!" pkg-name                   ; Replace !! in config-string with pkg-name
+                     (if (string-prefix-p ":" pkg-config)   ; Check if pkg-config starts with ":"
+                         pkg-config                         ; Return pkg-config as is
+                       (concat ":config " pkg-config))))))) ; Else, prepend ":config " to pkg-config
+          (message "%s" form)                                     ; Print form to the *Messages* buffer
+          (eval (read form)))                               ; Evaluate the constructed form
+        ))))
 
 ;; Call the function with the 'package-names' variable
 (generate-and-run-use-package-declarations package-names)
@@ -773,79 +780,88 @@ to the `*Messages*` buffer."
 
 * Prettify Symbols                                           :Visual:Symbols:
 Show pretty symbols for things like lambda, etc
+** Symbols Table
 #+NAME: Symbol-Table
-| Ugly               | Mode       | Pretty | Reason                      |
-|--------------------+------------+--------+-----------------------------|
-| forEach            | js         | ∀      | std Math Symbol             |
-| for                | js         | ↻     | Looping construct           |
-| in                 | js         | ∊      | "element of"                |
-| function           | js         | λ      | std gr. lambda              |
-| <=                 | js         | ≤      | smaller  or equal           |
-| >=                 | js         | ≥      | greater or equal            |
-| =>                 | js         | ⤇     | "follows"                   |
-| ^=                 | js         | ≙      |                             |
-| ==                 | js         | ≡      |                             |
-| ===                | js         | ≣      |                             |
-| var                | js         | 𝕍     |                             |
-| getElementById     | js         | ꖛ     | ⋕                          |
-| querySelector      | js         | 𝑸     |                             |
-| querySelectorAll   | js         | ℚ      |                             |
-| insertAdjacentHTML | js         | @      |                             |
-| document           | js         | 𝔻     |                             |
-| .parentNode        | js         | ℙ      |                             |
-| info               | js         | ⓘ     |                             |
-| async              | js         | ⑂      | "fork"                      |
-| beforebegin        | js         | ⬑     | "back and up the tag stack" |
-| null               | js         | ⦰     | "Empty Set"                 |
-| createElement      | js         | Ⓒ     |                             |
-| console            | js         | 🖳     |                             |
-| .classList         | js         | ℂ      |                             |
-| insertBefore       | js         | ⥶     | "Place before tag"          |
-| appendChild        | js         | ⥸     | "Place after tag"           |
-| while              | js         | ⌛    |                             |
-| true               | js         | ①     | True, binary one            |
-| false              | js         | ⓪     | False, binary zero          |
-| if                 | js         | ⁇     |                             |
-| alert              | js         | ⓐ     |                             |
-| from               | js         | ↤     |                             |
-| +=                 | js         | ⥆     |                             |
-| return             | js         | ↲      |                             |
-| replace            | js         | ↕      |                             |
-| body               | js         | 𝔹     |                             |
-| innerText          | js         | 𝕋     |                             |
-| innerHTML          | js         | ℍ      |                             |
-| dolist             | emacs-lisp | ∀      | see js/forEach              |
-| eq                 | emacs-lisp | ≟      |                             |
-| setq               | emacs-lisp | ≔      |                             |
-| nil                | emacs-lisp | ∅     |                             |
-| if                 | emacs-lisp | ⁇     |                             |
-| unless             | emacs-lisp | ⁈      |                             |
-| not                | emacs-lisp | ¬      |                             |
-| defun              | emacs-lisp | 𝔽     |                             |
-| define-key         | emacs-lisp | 𝔻     |                             |
-| message            | emacs-lisp | 𝕄     |                             |
-| :extend            | emacs-lisp | ⭲     | Fill to the right           |
-| :background        | emacs-lisp | █      |                             |
-| :underline         | emacs-lisp | ▁      |                             |
-| :overline          | emacs-lisp | ▔      |                             |
-| progn              | emacs-lisp | 𝌆     | List of expressions         |
-| require            | emacs-lisp | ℝ      |                             |
-| kbd                | emacs-lisp | 𝕂     |                             |
-| and                | emacs-lisp | ∧      |                             |
-| add-hook           | emacs-lisp | ℍ      |                             |
-| \#+BEGIN_SRC        | org        | ✎      |                             |
-| \#+END_SRC          | org        | ⮴     |                             |
-| :var               | org        | 𝕍     |                             |
-| #+NAME:            | org        | ℕ      |                             |
-| #+RESULTS:         | org        | ℝ      |                             |
-| #+HEADER:          | org        | ▶     |                             |
-| defun              | Unused     | 𝕗      |                             |
-| defun              | Unused     | Ⓕ     |                             |
-| add-hook           | Unused     | Ⓗ     |                             |
-| define-key         | Unused     | Ⓓ     |                             |
-| for                | python     | ↻     |                             |
-| in                 | python     | ∊      |                             |
+| Ugly                     | Mode               | Pretty | Reason                      |
+|--------------------------+--------------------+--------+-----------------------------|
+| forEach                  | js                 | ∀      | std Math Symbol             |
+| for                      | js                 | ↻      | Looping construct           |
+| in                       | js                 | ∊      | "element of"                |
+| function                 | js                 | λ      | std gr. lambda              |
+| <=                       | js                 | ≤      | smaller  or equal           |
+| >=                       | js                 | ≥      | greater or equal            |
+| =>                       | js                 | ⤇      | "follows"                   |
+| ^=                       | js                 | ≙      |                             |
+| ==                       | js                 | ≡      |                             |
+| ===                        | js                 | ≣      |                             |
+| var                      | js                 | 𝕍      |                             |
+| getElementById           | js                 | ꖛ      | ⋕                           |
+| querySelector            | js                 | 𝑸      |                             |
+| querySelectorAll         | js                 | ℚ      |                             |
+| insertAdjacentHTML       | js                 | @      |                             |
+| document                 | js                 | 𝔻      |                             |
+| .parentNode              | js                 | ℙ      |                             |
+| info                     | js                 | ⓘ      |                             |
+| async                    | js                 | ⑂      | "fork"                      |
+| beforebegin              | js                 | ⬑      | "back and up the tag stack" |
+| null                     | js                 | ⦰      | "Empty Set"                 |
+| createElement            | js                 | Ⓒ      |                             |
+| console                  | js                 | 🖳      |                             |
+| .classList               | js                 | ℂ      |                             |
+| insertBefore             | js                 | ⥶      | "Place before tag"          |
+| appendChild              | js                 | ⥸      | "Place after tag"           |
+| while                    | js                 | ⌛     |                             |
+| true                     | js                 | ①      | True, binary one            |
+| false                    | js                 | ⓪      | False, binary zero          |
+| if                       | js                 | ⁇     |                             |
+| alert                    | js                 | ⓐ      |                             |
+| from                     | js                 | ↤     |                             |
+| +=                       | js                 | ⥆      |                             |
+| return                   | js                 | ↲       |                             |
+| replace                  | js                 | ↕      |                             |
+| body                     | js                 | 𝔹      |                             |
+| innerText                | js                 | 𝕋      |                             |
+| innerHTML                | js                 | ℍ      |                             |
+| row                      | js emacs-lisp Lisp | ⠉       |                             |
+| table                    | js emacs-lisp Lisp |   ⠿     |                             |
+| dolist                   | emacs-lisp Lisp    | ∀      | see js/forEach              |
+| eq                       | emacs-lisp Lisp    | ≟      |                             |
+| setq                     | emacs-lisp Lisp    | ≔      |                             |
+| nil                      | emacs-lisp Lisp    | ∅     |                             |
+| if                       | emacs-lisp Lisp    | ⁇     |                             |
+| unless                   | emacs-lisp Lisp    | ⁈      |                             |
+| not                      | emacs-lisp Lisp    | ¬      |                             |
+| defun                    | emacs-lisp Lisp    | 𝔽      |                             |
+| define-key               | emacs-lisp Lisp    | 𝔻      |                             |
+| message                  | emacs-lisp Lisp    | 𝕄      |                             |
+| :extend                  | emacs-lisp Lisp    | ⭲      | Fill to the right           |
+| :background              | emacs-lisp Lisp    | █      |                             |
+| :underline               | emacs-lisp Lisp    | ▁      |                             |
+| :overline                | emacs-lisp Lisp    | ▔      |                             |
+| progn                    | emacs-lisp Lisp    | 𝌆      | List of expressions         |
+| require                  | emacs-lisp Lisp    | ℝ      |                             |
+| kbd                      | emacs-lisp Lisp    | 𝕂      |                             |
+| and                      | emacs-lisp Lisp    | ∧      |                             |
+| format                   | emacs-lisp Lisp    | 𝕗    |                             |
+| form                     | emacs-lisp Lisp    | 🗏      |                             |
+| add-hook                 | emacs-lisp Lisp    | ℍ      |                             |
+| let                      | emacs-lisp Lisp    | ⤆      |                             |
+| let*                     | emacs-lisp Lisp    | ⟽     |                             |
+| replace-regexp-in-string | emacs-lisp Lisp    | ⫻      |                             |
+| \#+BEGIN_SRC                       | org                | ✎      |                             |
+| \#+END_SRC                       | org                | ⮴      |                             |
+| :var                        | org                | 𝕍      |                             |
+| #+NAME:                        | org                | ℕ      |                             |
+| #+RESULTS:                        | org                | ℝ      |                             |
+| #+HEADER:                       | org                | ▶     |                             |
+| defun                    | Unused             | 𝕗      |                             |
+| defun                    | Unused             | Ⓕ      |                             |
+| add-hook                 | Unused             | Ⓗ      |                             |
+| define-key               | Unused             | Ⓓ      |                             |
+| for                      | python             | ↻      |                             |
+| in                       | python             | ∊      |                             |
 
+** Code
 #+BEGIN_SRC emacs-lisp
 (setq-default prettify-symbols-unprettify-at-point t)
 (global-prettify-symbols-mode)
@@ -857,15 +873,15 @@ Show pretty symbols for things like lambda, etc
 #+END_SRC
 
 #+NAME: Make-Pretty-Pairs
-#+HEADER: :var symbol-table=Symbol-Table
+#+HEADER: :var table=Symbol-Table
 #+BEGIN_SRC emacs-lisp
 (let ((language-hooks (make-hash-table :test 'equal)))
   ;; Process each row to group symbols by language, skipping 'unused
-  (dolist (row symbol-table)
+  (dolist (row table)
     (let* ((ugly (nth 0 row))
-           (modes (split-string (nth 1 row) " ")) ; Split modes by space
-           (pretty (nth 2 row))
-           (entry (format "(\"%s\" . ?%s)" ugly pretty)))
+        (modes (split-string (nth 1 row) " ")) ; Split modes by space
+        (pretty (nth 2 row))
+        (entry (format "(\"%s\" . ?%s)" ugly pretty)))
       (dolist (mode modes) ; Process each mode
         (unless (string= mode "unused") ; Skip entries with mode "unused"
           (let ((hook-symbol (intern (concat mode "-mode-hook"))))
@@ -876,11 +892,11 @@ Show pretty symbols for things like lambda, etc
   (maphash
    (lambda (hook-symbol entries)
      (let ((hook-code
-            (format "(add-hook '%s
-  (lambda () (mapc (lambda (pair) (push pair prettify-symbols-alist))
+          (format "(add-hook '%s
+(lambda () (mapc (lambda (pair) (push pair prettify-symbols-alist))
     '(%s))))"
-                    hook-symbol
-                    (string-join (reverse entries) "\n      "))))
+             hook-symbol
+             (string-join (reverse entries) "\n      "))))
        (message "%s" hook-code)
        (eval (read hook-code))))
    language-hooks))
@@ -906,3 +922,5 @@ Doesnt work yet, until when CodeBlock is opened seperate frame with =C-c C-'=
 | *C-c / m*     | org    | org-sparse-display match by Tag                |
 | *M-S-↑→↓←*    | org    | in TableEditor: Remove/add Columns/Lines       |
 ** TODO Add some more keyboard shortcuts in the usage hint section
+
+ # -->
